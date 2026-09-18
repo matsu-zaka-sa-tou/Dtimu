@@ -13,7 +13,8 @@ namespace MVCDtimu
         public static string Version { get; set; }
         public static string RootPath { get; set; }
         public static FileExtensionContentTypeProvider Provider { get; internal set; } = new FileExtensionContentTypeProvider();
-        public static DireInfo? DireInfo { get; private set; }
+        public static DireInfo? DireInfo { get; 
+            private set; }
 
         public static void Main(string[] args)
         {

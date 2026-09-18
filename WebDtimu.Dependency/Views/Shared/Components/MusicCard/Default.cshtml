@@ -86,6 +86,145 @@
 </div>
 
 <script>
+    // —— 与 WebDtimu.Dependency.TextCoverUtil 视觉同步的前端 SVG 封面 ——
+    (function () {
+        // 14 色，与 CS 的 GetRandomBackgroundColor 完全一致
+        const COLORS = [
+            [49, 91, 37], [31, 78, 64], [39, 67, 105], [54, 75, 94],
+            [72, 52, 91], [95, 49, 78], [106, 47, 52], [113, 56, 48],
+            [92, 67, 45], [61, 66, 70], [34, 81, 84], [50, 58, 102],
+            [76, 85, 42], [82, 60, 53]
+        ];
+
+        // 与 CS 的 GetCoverFontFamily 顺序一致
+        const FONT = '"Microsoft YaHei UI","Microsoft YaHei","Segoe UI",Arial,sans-serif';
+
+        const W = 420, H = 420;
+        const LEFT = 22, BOTTOM = 18;
+        const NAME_MAX_W = 220, NAME_MAX_H = 165;
+        const BIG_FONT = 300;
+
+        let _ctx = null;
+        function ctx() {
+            if (!_ctx) _ctx = document.createElement('canvas').getContext('2d');
+            return _ctx;
+        }
+
+        // ★ 按专辑名哈希选色：同一名字永远得到同一种颜色
+        function pickColor(text) {
+            let h = 2166136261 >>> 0;   // FNV-1a
+            for (const ch of (text || '')) {
+                h ^= ch.codePointAt(0);
+                h = Math.imul(h, 16777619) >>> 0;
+            }
+            const c = COLORS[h % COLORS.length];
+            return `rgb(${c[0]},${c[1]},${c[2]})`;
+        }
+
+        // 与 CS 的 GetFirstTextElement 对应（Intl.Segmenter 处理 emoji、组合字符）
+        function firstElement(text) {
+            text = (text || '').trim();
+            if (!text) return '?';
+            if (window.Intl && Intl.Segmenter) {
+                const seg = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+                for (const s of seg.segment(text)) return s.segment.toUpperCase();
+            }
+            return Array.from(text)[0].toUpperCase();
+        }
+
+        // 按字符换行，CJK 友好；拉丁单词太长也能硬切
+        function wrap(c, text, maxW) {
+            const lines = [];
+            let cur = '';
+            for (const ch of text) {
+                const t = cur + ch;
+                if (c.measureText(t).width > maxW && cur) {
+                    lines.push(cur);
+                    cur = ch;
+                } else {
+                    cur = t;
+                }
+            }
+            if (cur) lines.push(cur);
+            return lines.length ? lines : [''];
+        }
+
+        function esc(s) {
+            return String(s).replace(/[<>&"']/g, ch => ({
+                '<': '&lt;', '>': '&gt;', '&': '&amp;',
+                '"': '&quot;', "'": '&apos;'
+            }[ch]));
+        }
+
+        function generateCoverSvg(text) {
+            text = (text || '').trim() || '?';
+            const c = ctx();
+
+            /* ---------- 1. 大字符（右下角，300px 粗体，溢出裁切） ---------- */
+            const big = firstElement(text);
+            c.font = `bold ${BIG_FONT}px ${FONT}`;
+            const bm = c.measureText(big);
+
+            const bAsc = bm.actualBoundingBoxAscent || BIG_FONT * 0.85;
+            const bDesc = bm.actualBoundingBoxDescent || BIG_FONT * 0.15;
+            const bW = bm.width || BIG_FONT;
+            const bH = bAsc + bDesc;
+
+            // 对应 CS：
+            //   x = CoverWidth  - textSize.Width  * 0.68
+            //   y = CoverHeight - textSize.Height * 0.72
+            const bigLeft = W - bW * 0.68;
+            const bigTop  = H - bH * 0.72;
+            const bigBase = bigTop + bAsc;    // SVG 用基线定位
+
+            /* ---------- 2. 专辑名（左下角，25→15 缩放 + 自动换行） ---------- */
+            let fontSize = 25, lines = [text], lineH = 25 * 1.25, lineAsc = 25 * 0.85;
+            for (let s = 25; s >= 15; s--) {
+                c.font = `${s}px ${FONT}`;
+                const ln = wrap(c, text, NAME_MAX_W);
+                const lh = s * 1.25;
+                if (ln.length * lh <= NAME_MAX_H || s === 15) {
+                    fontSize = s;
+                    lines = ln;
+                    lineH = lh;
+                    const m = c.measureText('中');
+                    lineAsc = m.actualBoundingBoxAscent || s * 0.85;
+                    break;
+                }
+            }
+
+            const blockH   = lines.length * lineH;
+            const blockTop = H - BOTTOM - blockH;
+
+            const tspans = lines.map((line, i) =>
+                `<tspan x="${LEFT}" y="${(blockTop + i * lineH + lineAsc).toFixed(2)}">${esc(line)}</tspan>`
+            ).join('');
+
+            /* ---------- 3. 组装 SVG ---------- */
+            const bg = pickColor(text);
+
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
+                + `<rect width="${W}" height="${H}" fill="${bg}"/>`
+                + `<text x="${bigLeft.toFixed(2)}" y="${bigBase.toFixed(2)}" `
+                + `font-family='${FONT}' font-size="${BIG_FONT}" font-weight="bold" fill="#fff">`
+                + esc(big)
+                + `</text>`
+                + `<text font-family='${FONT}' font-size="${fontSize}" fill="#fff">`
+                + tspans
+                + `</text>`
+                + `</svg>`;
+        }
+
+        function coverSvgDataUrl(text) {
+            return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(generateCoverSvg(text));
+        }
+
+        window.generateCoverSvg = generateCoverSvg;
+        window.coverSvgDataUrl  = coverSvgDataUrl;
+    })();
+</script>
+
+<script>
     (() => {
         document.addEventListener("DOMContentLoaded", async () => {
             const cardBase = document.getElementById('@guid');
@@ -98,11 +237,26 @@
             const preview = chrome.querySelector('.preview-box');
 
             const albumsDict = await fetch('/api/Lists/AlumbList').then(r => r.json());
-            const pictureInfo = await fetch('/api/Lists/PicturesList').then(r => r.json());
 
             const albumsInfo = Object.entries(albumsDict).map(([key, value]) => ({
                 key, ...value
             }));
+
+            // ★ 无封面专辑的 SVG 只生成一次，颜色/字体稳定
+            const _svgCache = new Map();
+
+            // 统一封面 URL：有图走二进制接口，无图走前端 SVG（带缓存）
+            function coverUrl(item) {
+                if (item.pictures && item.pictures.length) {
+                    return '/Cover/' + encodeURIComponent(item.pictures[0]);
+                }
+                let url = _svgCache.get(item.key);
+                if (!url) {
+                    url = coverSvgDataUrl(item.key);
+                    _svgCache.set(item.key, url);
+                }
+                return url;
+            }
 
             // 更新列数
             function updateGridColumns() {
@@ -119,57 +273,36 @@
                 el.style.width = Size + "px";
                 el.style.height = Size + "px";
 
-                if (!item.pictures || item.pictures.length === 0) {
-                    const div = document.createElement("div");
-                    div.classList.add("album-text");
-                    div.textContent = item.key.toUpperCase();
-                    div.style.backgroundColor = item.color || "#444";
-                    el.appendChild(div);
-                } else {
-                    const img = document.createElement("img");
-                    const hash = item.pictures[0];
-                    img.src = "data:image/png;base64," + pictureInfo[hash];
-                    el.appendChild(img);
-                }
+                const img = document.createElement("img");
+                img.src = coverUrl(item);
+                img.alt = item.key;
+                img.loading = "lazy";
+                el.appendChild(img);
 
                 albumGrid.appendChild(el);
 
                 // 鼠标悬浮显示预览
-    function showPreview(e) {
-        preview.style.display = "block";
+                function showPreview(e) {
+                    preview.style.display = "block";
+                    preview.innerHTML = `<img src="${coverUrl(item)}" alt="" />`;
 
-        if (!item.pictures || item.pictures.length === 0) {
-            preview.innerHTML = `<div class="preview-text" style="background:${item.color || "#444"}">${item.key}</div>`;
-        } else {
-            const hash = item.pictures[0];
-            preview.innerHTML = `<img src="data:image/png;base64,${pictureInfo[hash]}" />`;
-        }
+                    // 获取 item 相对于视口的位置（position:fixed 就是用视口坐标）
+                    const rect = el.getBoundingClientRect();
 
-        // 获取 item 相对于视口的位置
-        const rect = el.getBoundingClientRect();
+                    // 预览框居中显示在 item 中心
+                    let left = rect.left + rect.width / 2 - PREW / 2;
+                    let top  = rect.top  + rect.height / 2 - PREH / 2;
 
-        // 获取滚动偏移
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+                    // 可选微调，让预览框稍微偏右下
+                    left += 0;
+                    top += 0;
 
-        // 计算 item 中心坐标（页面坐标）
-        let centerX = rect.left + rect.width / 2 + scrollLeft;
-        let centerY = rect.top + rect.height / 2 + scrollTop;
+                    preview.style.left = left + "px";
+                    preview.style.top  = top  + "px";
 
-        // 预览框居中显示在 item 中心附近
-        let left = centerX - PREW / 2;
-        let top = centerY - PREH / 2;
-
-        // 可选微调，让预览框稍微偏右下
-        left += 0; // 可以改成 e.offsetX 或其他偏移
-        top += 0;  // 同上
-
-        preview.style.left = left + "px" ;
-        preview.style.top = top  - window.scrollY + "px";
-
-        preview.classList.add("show");
-        preview.classList.remove("hide");
-    }
+                    preview.classList.add("show");
+                    preview.classList.remove("hide");
+                }
 
                 function hidePreview() {
                     preview.classList.remove("show");
@@ -184,6 +317,11 @@
                 el.addEventListener("mouseenter", showPreview);
                 el.addEventListener("mousemove", showPreview);
                 el.addEventListener("mouseleave", hidePreview);
+
+                // 点击跳转
+                el.addEventListener("click", () => {
+                    location.href = "/Album/Detail?name=" + encodeURIComponent(item.key);
+                });
             });
 
             // 动态高度

@@ -1,0 +1,328 @@
+﻿@{
+    ViewData["Title"] = ViewBag.Name;
+}
+
+<div class="container py-4" style="max-width: 960px;">
+
+    <div class="d-flex align-items-center mb-4">
+        <a href="javascript:history.back()"
+           class="btn btn-outline-secondary btn-sm me-3 d-inline-flex align-items-center justify-content-center"
+           aria-label="返回">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                 viewBox="0 0 16 16" aria-hidden="true">
+                <path fill-rule="evenodd"
+                      d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8" />
+            </svg>
+        </a>
+        <h4 class="mb-0 text-truncate" title="@ViewBag.Name">@ViewBag.Name</h4>
+    </div>
+
+    <div id="album">
+        <div class="text-muted small">加载中…</div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        /* ---------- 为 PJAX 重复执行准备：清理上一次的监听器 ---------- */
+        if (window.__detailCleanup) {
+            try { window.__detailCleanup(); } catch (e) {}
+        }
+        const _cleanups = [];
+        window.__detailCleanup = function () {
+            _cleanups.forEach(function (fn) { try { fn(); } catch (e) {} });
+            _cleanups.length = 0;
+        };
+        function on(target, type, handler, opts) {
+            target.addEventListener(type, handler, opts);
+            _cleanups.push(function () { target.removeEventListener(type, handler, opts); });
+        }
+
+        /* ---------- 基本参数 ---------- */
+        const albumName = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.Name));
+
+        /* 每批 query 携带的哈希数量：默认 maxQueryString 2048 字节，20 * 64 ≈ 1.3KB 安全 */
+        const MUSIC_BATCH_SIZE = 20;
+
+        /* ⚠️ 按你实际的路由改这里。你的 action 是 [HttpGet("Music/{hash}")]，
+           看之前 MusicList 的写法，控制器前缀很可能是 /api/Lists。 */
+    const MUSIC_API = h => '/api/Files/Music/' + encodeURIComponent(h);
+
+        /* ---------- 内联 SVG 图标 ---------- */
+        const ICON_PLAY = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+        </svg>`;
+
+        const ICON_PAUSE = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5"/>
+        </svg>`;
+
+        /* ---------- 状态 ---------- */
+        let _queue = [];                 // 当前页面的播放队列
+        const _btnByHash = new Map();    // hash -> button 元素
+
+        /* ---------- 入口 ---------- */
+        if (document.readyState === 'loading') {
+            on(document, 'DOMContentLoaded', init);
+        } else {
+            init();
+        }
+        on(document, 'player:change', onPlayerChange);
+
+        async function init() {
+            const root = document.getElementById('album');
+            if (!root) return;
+            try {
+                // ---- 第一步：拿专辑详情 ----
+                const albumResp = await fetch('/api/albums?name=' + encodeURIComponent(albumName));
+                if (!albumResp.ok) {
+                    root.innerHTML = '<div class="alert alert-danger mb-0">加载失败：HTTP ' + albumResp.status + '</div>';
+                    return;
+                }
+                const album = await albumResp.json();
+
+                const musics = album.musics ?? album.Musics ?? [];
+
+                // ---- 第二步：按哈希分批拉曲目元数据 ----
+                let musicMap = {};
+                if (musics.length) {
+                    try {
+                        musicMap = await fetchMusicMap(musics);
+                    } catch (e) {
+                        console.warn('曲目元数据加载失败，退化为哈希显示：', e);
+                    }
+                }
+
+                render(root, album, musicMap);
+            } catch (e) {
+                root.innerHTML = '<div class="alert alert-danger mb-0">加载失败：' + escapeHtml(e.message) + '</div>';
+            }
+        }
+
+        /* ---------- 分批拉取曲目字典 ---------- */
+        async function fetchMusicMap(hashes) {
+            const merged = {};
+            for (let i = 0; i < hashes.length; i += MUSIC_BATCH_SIZE) {
+                const batch = hashes.slice(i, i + MUSIC_BATCH_SIZE);
+                const qs = batch.map(function (h) { return 'hashes=' + encodeURIComponent(h); }).join('&');
+                const resp = await fetch('/api/Lists/MusicList?' + qs);
+                if (!resp.ok) {
+                    console.warn('MusicList 批次失败：HTTP ' + resp.status);
+                    continue;
+                }
+                const part = await resp.json();
+                Object.assign(merged, part);
+            }
+            return merged;
+        }
+
+        /* ---------- 播放器状态变化 → 刷新本页按钮 ---------- */
+        function onPlayerChange(e) {
+            const cur = e.detail || {};
+            _btnByHash.forEach(function (btn, hash) {
+                const isCurrent = hash === cur.hash;
+                const isPlaying = isCurrent && cur.playing;
+                btn.innerHTML = isPlaying ? ICON_PAUSE : ICON_PLAY;
+                btn.classList.toggle('btn-primary', isCurrent);
+                btn.classList.toggle('btn-outline-secondary', !isCurrent);
+                btn.setAttribute('aria-label', isPlaying ? '暂停' : '播放');
+                btn.title = isPlaying ? '暂停' : '播放';
+            });
+        }
+
+        /* ---------- 主渲染 ---------- */
+        function render(root, data, musicMap) {
+            const performers = data.albumPerformers ?? data.AlbumPerformers ?? [];
+            const pictures   = data.pictures        ?? data.Pictures        ?? [];
+            const musics     = data.musics          ?? data.Musics          ?? [];
+
+            const albumCover = pictures[0] ? ('/Cover/' + encodeURIComponent(pictures[0])) : null;
+
+            /* 构造播放队列 */
+            _queue = musics.map(function (hash) {
+                const m = musicMap ? musicMap[hash] : null;
+                const t = m ? (m.Title      ?? m.title      ?? '') : '';
+                const p = m ? (m.Performers ?? m.performers ?? []) : [];
+                return {
+                    hash:  hash,
+                    url:   MUSIC_API(hash),
+                    title: t || (hash.slice(0, 16) + '…'),
+                    artist: Array.isArray(p) ? p.join(' / ') : '',
+                    cover: albumCover
+                };
+            });
+            _btnByHash.clear();
+
+            root.innerHTML = '';
+
+            /* ---- Performers ---- */
+            if (performers.length) {
+                const sec = el('section', 'mb-4');
+                sec.appendChild(sectionTitle('演出者'));
+                const wrap = el('div', 'd-flex flex-wrap gap-2');
+                performers.forEach(function (p) {
+                    const badge = el('span', 'badge rounded-pill text-bg-light border px-3 py-2 fw-normal');
+                    badge.textContent = p;
+                    wrap.appendChild(badge);
+                });
+                sec.appendChild(wrap);
+                root.appendChild(sec);
+            }
+
+            /* ---- Pictures ---- */
+            {
+                const sec = el('section', 'mb-4');
+                sec.appendChild(sectionTitle('图片 (' + pictures.length + ')'));
+                if (pictures.length === 0) {
+                    sec.appendChild(emptyHint('暂无图片'));
+                } else {
+                    const row = el('div', 'row g-2');
+                    pictures.forEach(function (hash) {
+                        const col = el('div', 'col-6 col-sm-4 col-md-3');
+                        const a = el('a', 'd-block ratio ratio-1x1 rounded-3 overflow-hidden border bg-light');
+                        a.href = '/Cover/' + encodeURIComponent(hash);
+                        a.target = '_blank';
+                        a.rel = 'noopener';
+                        const img = el('img', 'w-100 h-100 object-fit-cover');
+                        img.src = '/Cover/' + encodeURIComponent(hash);
+                        img.loading = 'lazy';
+                        img.alt = '';
+                        a.appendChild(img);
+                        col.appendChild(a);
+                        row.appendChild(col);
+                    });
+                    sec.appendChild(row);
+                }
+                root.appendChild(sec);
+            }
+
+            /* ---- Musics ---- */
+            {
+                const sec = el('section', 'mb-4');
+                sec.appendChild(sectionTitle('曲目 (' + musics.length + ')'));
+                if (musics.length === 0) {
+                    sec.appendChild(emptyHint('暂无音乐'));
+                } else {
+                    const list = el('div', 'list-group');
+                    musics.forEach(function (hash, i) {
+                        list.appendChild(buildMusicItem(hash, i, musicMap));
+                    });
+                    sec.appendChild(list);
+                }
+                root.appendChild(sec);
+            }
+
+            /* 渲染完成后，主动同步一次按钮状态（处理“已经在放这首歌”的场景） */
+            if (window.MvPlayer && typeof window.MvPlayer.refresh === 'function') {
+                window.MvPlayer.refresh();
+            }
+        }
+
+        /* ---------- 单条曲目 ---------- */
+        function buildMusicItem(hash, i, musicMap) {
+            const m = musicMap ? musicMap[hash] : null;
+
+            const title      = m ? (m.Title      ?? m.title      ?? '') : '';
+            const performers = m ? (m.Performers ?? m.performers ?? []) : [];
+            const fileName   = m ? (m.FileName   ?? m.fileName   ?? '') : '';
+
+            const item = el('div', 'list-group-item d-flex align-items-start gap-3 py-3');
+
+            // 序号
+            const idx = el('span', 'text-muted small font-monospace flex-shrink-0 pt-1');
+            idx.style.minWidth = '2.5em';
+            idx.textContent = String(i + 1).padStart(2, '0');
+            item.appendChild(idx);
+
+            // 中部信息区
+            const info = el('div', 'flex-grow-1');
+            info.style.minWidth = '0';
+
+            const titleEl = el('div', 'fw-semibold text-truncate');
+            titleEl.title = title || hash;
+            if (title) {
+                titleEl.textContent = title;
+            } else {
+                titleEl.textContent = hash.slice(0, 16) + '…';
+                titleEl.classList.add('text-body-secondary', 'fst-italic');
+            }
+            info.appendChild(titleEl);
+
+            const subParts = [];
+            if (performers && performers.length) {
+                const perfWrap = el('span', 'me-2');
+                performers.forEach(function (p, k) {
+                    if (k > 0) perfWrap.appendChild(document.createTextNode(' / '));
+                    const b = el('span', 'badge rounded-pill text-bg-light border fw-normal');
+                    b.textContent = p;
+                    perfWrap.appendChild(b);
+                });
+                subParts.push(perfWrap);
+            }
+            if (fileName) {
+                const fn = el('span', 'text-body-secondary font-monospace small');
+                fn.title = fileName;
+                fn.textContent = fileName;
+                subParts.push(fn);
+            } else if (!performers.length) {
+                const fn = el('span', 'text-body-secondary font-monospace small');
+                fn.title = hash;
+                fn.textContent = hash;
+                subParts.push(fn);
+            }
+            if (subParts.length) {
+                const sub = el('div', 'small mt-1 d-flex flex-wrap align-items-center gap-1');
+                subParts.forEach(function (s) { sub.appendChild(s); });
+                info.appendChild(sub);
+            }
+
+            item.appendChild(info);
+
+            /* ---- 播放按钮 ---- */
+            const btn = el('button', 'btn btn-sm btn-outline-secondary flex-shrink-0 d-inline-flex align-items-center justify-content-center');
+            btn.type = 'button';
+            btn.setAttribute('aria-label', '播放');
+            btn.title = '播放';
+            btn.style.width = '2.2em';
+            btn.style.height = '2.2em';
+            btn.innerHTML = ICON_PLAY;
+            on(btn, 'click', function () { playAt(i); });
+            _btnByHash.set(hash, btn);
+            item.appendChild(btn);
+
+            return item;
+        }
+
+        /* ---------- 触发播放 ---------- */
+        function playAt(i) {
+            if (!window.MvPlayer) {
+                console.warn('MvPlayer 未初始化，请检查 Layout 中的播放器脚本');
+                return;
+            }
+            window.MvPlayer.playQueue(_queue, i);
+        }
+
+        /* ---------- 小工具 ---------- */
+        function el(tag, cls) {
+            const e = document.createElement(tag);
+            if (cls) e.className = cls;
+            return e;
+        }
+        function sectionTitle(text) {
+            const h = el('h6', 'text-uppercase text-muted small fw-semibold mb-3');
+            h.style.letterSpacing = '.08em';
+            h.textContent = text;
+            return h;
+        }
+        function emptyHint(text) {
+            const d = el('div', 'text-muted small fst-italic');
+            d.textContent = text;
+            return d;
+        }
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, function (c) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+            });
+        }
+    })();
+</script>

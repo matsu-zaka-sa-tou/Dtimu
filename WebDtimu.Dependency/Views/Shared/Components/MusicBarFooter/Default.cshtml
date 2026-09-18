@@ -1,0 +1,35 @@
+﻿<div class="player-inner">
+
+    <!-- 左：封面 + 歌曲信息 -->
+    <div class="player-info">
+        <div class="player-cover" id="playerCover"></div>
+        <div class="player-meta">
+            <div class="player-title" id="songTitle">歌曲名称</div>
+            <div class="player-artist" id="songArtist">歌手</div>
+        </div>
+    </div>
+
+    <!-- 中：控制按钮 + 进度条 -->
+    <div class="player-center">
+        <div class="player-controls">
+            <button type="button" class="player-btn" id="btnPrev" title="上一首">⏮</button>
+            <button type="button" class="player-btn player-btn-main" id="btnPlay" title="播放/暂停">▶</button>
+            <button type="button" class="player-btn" id="btnNext" title="下一首">⏭</button>
+        </div>
+        <div class="player-progress">
+            <span class="player-time" id="timeCurrent">00:00</span>
+            <input type="range" class="player-range" id="progressRange"
+                   min="0" max="100" step="0.1" value="0" aria-label="播放进度" />
+            <span class="player-time" id="timeTotal">00:00</span>
+        </div>
+    </div>
+
+    <!-- 右：音量 -->
+    <div class="player-right">
+        <button type="button" class="player-btn player-btn-volume" id="btnMute" title="静音">🔊</button>
+        <input type="range" class="player-range player-range-volume" id="volumeRange"
+               min="0" max="100" step="1" value="80" aria-label="音量" />
+    </div>
+</div>
+
+<audio id="audioPlayer" preload="metadata"></audio>
