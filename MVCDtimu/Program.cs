@@ -12,8 +12,13 @@ namespace MVCDtimu
 
         public static string Version { get; set; }
         public static string RootPath { get; set; }
+        /// <summary>
+        /// 该目录是否为烧录后的目录，烧录后的目录不允许上传（修改）文件。
+        /// </summary>
+        public static bool IsBurned { get; set; }
         public static FileExtensionContentTypeProvider Provider { get; internal set; } = new FileExtensionContentTypeProvider();
-        public static DireInfo? DireInfo { get; private set; }
+        public static DireInfo? DireInfo { get; 
+            private set; }
 
         public static void Main(string[] args)
         {
@@ -35,7 +40,8 @@ namespace MVCDtimu
             RootPath = Environment.CurrentDirectory;
             if (builder.Configuration.GetSection("dir") is IConfigurationSection ic)
             {
-                RootPath = ic["root"];
+                RootPath = ic["root"] ?? RootPath;
+                IsBurned = bool.TryParse(ic["IsBurned"], out var burned) && burned;
             }
             try
             {

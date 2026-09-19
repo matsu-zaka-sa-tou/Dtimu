@@ -1,0 +1,453 @@
+<div class="ds-markdown ds-assistant-message-main-content">
+    <h1><span class="">本轮对话总结</span></h1>
+    <p class="ds-markdown-paragraph"><span class="">按时间线拆成六件事，每件都点出</span><strong><span
+                class="">为什么这么改</span></strong><span class="">，而不只是"改成什么"。</span></p>
+    <hr>
+    <h2><span class="">一、navbar 右上角加状态图标（上传 / 光盘）</span></h2>
+    <p class="ds-markdown-paragraph"><strong><span class="">需求</span></strong><span
+            class="">：</span><code>Program.IsBurned</code><span class=""> 为 false 显示上传图标跳
+        </span><code>/update</code><span class="">，true 显示光盘图标跳 </span><code>/about</code><span class="">。</span></p>
+    <p class="ds-markdown-paragraph"><strong><span class="">遇到的两个坑</span></strong><span class="">：</span></p>
+    <ol start="1">
+        <li>
+            <p class="ds-markdown-paragraph"><strong><span class="">图标看不到</span></strong><span class=""> →
+                </span><code>_Layout.cshtml</code><span class=""> 的 </span><code>&lt;head&gt;</code><span class=""> 里没有
+                    bootstrap-icons 的样式引用。</span><code>&lt;i class="bi bi-upload"&gt;</code><span class="">
+                    是靠字体渲染的，字体没加载出来就是个 0×0 的空标签。补一行 CDN </span><code>&lt;link&gt;</code><span class=""> 解决；不想依赖 CDN
+                    就改用内联 SVG。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><strong><span class="">图标不跳转</span></strong><span class=""> → 页面里有
+                    PJAX，点击逻辑是：</span></p>
+            <div class="md-code-block md-code-block-light">
+                <div class="md-code-block-banner-wrap">
+                    <div class="md-code-block-banner md-code-block-banner-lite">
+                        <div class="_121d384">
+                            <div class="d2a24f03"><span class="d813de27">js</span></div>
+                            <div class="d2a24f03 _246a029">
+                                <div class="efa13877">
+                                    <div role="button"
+                                        class="ds-button ds-button--borderlessNeutral ds-button--borderless ds-button--capsule ds-button--xs ds-button--icon-relative-m ds-button--min-width _64bb515"
+                                        tabindex="0">
+                                        <div class="ds-button__background"></div>
+                                        <div class="ds-button__icon"><svg width="16" height="16" viewBox="0 0 16 16"
+                                                fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M6.14929 4.02032C7.11197 4.02032 7.87983 4.02016 8.49597 4.07598C9.12128 4.13269 9.65792 4.25188 10.1415 4.53106C10.7202 4.8653 11.2008 5.3459 11.535 5.92462C11.8142 6.40818 11.9334 6.94481 11.9901 7.57012C12.0459 8.18625 12.0458 8.95419 12.0458 9.9168C12.0458 10.8795 12.0459 11.6473 11.9901 12.2635C11.9334 12.8888 11.8142 13.4254 11.535 13.909C11.2008 14.4877 10.7202 14.9683 10.1415 15.3025C9.65792 15.5817 9.12128 15.7009 8.49597 15.7576C7.87984 15.8134 7.11196 15.8133 6.14929 15.8133C5.18667 15.8133 4.41874 15.8134 3.80261 15.7576C3.1773 15.7009 2.64067 15.5817 2.1571 15.3025C1.5784 14.9683 1.09778 14.4877 0.76355 13.909C0.484366 13.4254 0.365184 12.8888 0.308472 12.2635C0.252649 11.6473 0.252808 10.8795 0.252808 9.9168C0.252808 8.95418 0.252664 8.18625 0.308472 7.57012C0.365184 6.94481 0.484366 6.40818 0.76355 5.92462C1.09777 5.34589 1.57839 4.86529 2.1571 4.53106C2.64067 4.25188 3.1773 4.13269 3.80261 4.07598C4.41874 4.02017 5.18666 4.02032 6.14929 4.02032ZM6.14929 5.37774C5.16181 5.37774 4.46634 5.37761 3.92566 5.42657C3.39434 5.47472 3.07859 5.56574 2.83582 5.70587C2.4632 5.92106 2.15354 6.2307 1.93835 6.60333C1.79823 6.8461 1.70721 7.16185 1.65906 7.69317C1.6101 8.23385 1.61023 8.92933 1.61023 9.9168C1.61023 10.9043 1.61009 11.5998 1.65906 12.1404C1.70721 12.6717 1.79823 12.9875 1.93835 13.2303C2.15356 13.6029 2.46321 13.9126 2.83582 14.1277C3.07859 14.2679 3.39434 14.3589 3.92566 14.407C4.46634 14.456 5.16182 14.4559 6.14929 14.4559C7.13682 14.4559 7.83224 14.456 8.37292 14.407C8.90425 14.3589 9.21999 14.2679 9.46277 14.1277C9.83535 13.9126 10.145 13.6029 10.3602 13.2303C10.5004 12.9875 10.5914 12.6717 10.6395 12.1404C10.6885 11.5998 10.6884 10.9043 10.6884 9.9168C10.6884 8.92934 10.6885 8.23384 10.6395 7.69317C10.5914 7.16185 10.5004 6.8461 10.3602 6.60333C10.1451 6.23071 9.83536 5.92107 9.46277 5.70587C9.21999 5.56574 8.90424 5.47472 8.37292 5.42657C7.83224 5.3776 7.13682 5.37774 6.14929 5.37774ZM9.80164 0.367975C10.7638 0.367975 11.5314 0.36788 12.1473 0.423639C12.7726 0.480307 13.3093 0.598759 13.7928 0.877741C14.3717 1.21192 14.8521 1.69355 15.1864 2.27227C15.4655 2.75574 15.5857 3.29164 15.6425 3.9168C15.6983 4.53301 15.6971 5.3016 15.6971 6.26446V7.82989C15.6971 8.29264 15.6989 8.58993 15.6649 8.84844C15.4668 10.3525 14.401 11.5738 12.9833 11.9988V10.5467C13.6973 10.1903 14.2105 9.49662 14.3192 8.67169C14.3387 8.52347 14.3407 8.3358 14.3407 7.82989V6.26446C14.3407 5.27706 14.3398 4.58149 14.2909 4.04083C14.2428 3.50968 14.1526 3.19372 14.0126 2.95098C13.7974 2.57849 13.4876 2.26869 13.1151 2.05352C12.8724 1.91347 12.5564 1.82237 12.0253 1.77423C11.4847 1.72528 10.7888 1.7254 9.80164 1.7254H7.71472C6.7562 1.72558 5.92665 2.27697 5.52332 3.07891H4.07019C4.54221 1.51132 5.9932 0.368186 7.71472 0.367975H9.80164Z"
+                                                    fill="currentColor"></path>
+                                            </svg></div><span class="ds-button__content"><span
+                                                class="code-info-button-text">复制</span></span>
+                                    </div>
+                                    <div role="button"
+                                        class="ds-button ds-button--borderlessNeutral ds-button--borderless ds-button--capsule ds-button--xs ds-button--icon-relative-m ds-button--min-width"
+                                        tabindex="0">
+                                        <div class="ds-button__background"></div>
+                                        <div class="ds-button__icon"><svg width="16" height="16" viewBox="0 0 16 16"
+                                                fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M15.3695 11.411L15.1234 12.8866C14.8869 14.3042 13.6603 15.3436 12.223 15.3436H3.77673C2.33958 15.3434 1.1128 14.3042 0.876343 12.8866L0.630249 11.411L2.05408 11.1747L2.29919 12.6493C2.41973 13.3713 3.04475 13.9001 3.77673 13.9003H12.223C12.9551 13.9002 13.58 13.3713 13.7006 12.6493L13.9457 11.1747L15.3695 11.411ZM8.72205 8.994C8.77717 8.93934 8.83792 8.88106 8.90271 8.81627L12.4828 5.23424L13.5043 6.25572L9.92224 9.8358C9.6395 10.1185 9.38763 10.3732 9.15857 10.5575C8.91892 10.7503 8.63953 10.9224 8.2865 10.9784C8.09711 11.0083 7.90363 11.0083 7.71423 10.9784C7.36106 10.9224 7.0809 10.7503 6.84119 10.5575C6.61215 10.3732 6.36022 10.1185 6.07751 9.8358L2.49646 6.25572L3.51697 5.23424L7.09705 8.81627C7.16219 8.88142 7.22331 8.94006 7.27869 8.99498V1.3065H8.72205V8.994Z"
+                                                    fill="currentColor"></path>
+                                            </svg></div><span class="ds-button__content"><span
+                                                class="code-info-button-text">下载</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <pre><span><span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">shouldPjax</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span></span>
+<span>e<span class="token punctuation">.</span><span class="token function">preventDefault</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>          <span class="token comment">// ★ 先干掉浏览器默认跳转</span></span>
+<span><span class="token function">navigate</span><span class="token punctuation">(</span>a<span class="token punctuation">.</span>href<span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>      <span class="token comment">// 再交给 PJAX</span></span></pre>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"
+                    class="_9bc997d _33882ae">
+                    <path d="M-5.24537e-07 0C-2.34843e-07 6.62742 5.37258 12 12 12L0 12L-5.24537e-07 0Z"
+                        fill="currentColor"></path>
+                </svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"
+                    class="_9bc997d _28d7e84">
+                    <path d="M-5.24537e-07 0C-2.34843e-07 6.62742 5.37258 12 12 12L0 12L-5.24537e-07 0Z"
+                        fill="currentColor"></path>
+                </svg>
+            </div>
+            <p class="ds-markdown-paragraph"><span class="">而同源链接一定通过 </span><code>shouldPjax</code><span
+                    class="">，所以默认跳转</span><strong><span class="">已经被 prevent 了</span></strong><span class="">。接下来 PJAX
+                    内部如果发现路由 404 或者响应 HTML 里没有 </span><code>#app-main</code><span class="">，它会静默
+                </span><code>return</code><span class="">——结果就是"点了没反应"。</span><br><span class=""></span><strong><span
+                        class="">修法</span></strong><span class="">：给这两个 </span><code>&lt;a&gt;</code><span class=""> 加
+                </span><code>data-no-pjax</code><span class="">。这是 PJAX 里预留的开关，命中后 </span><code>shouldPjax</code><span
+                    class=""> 返回 false，</span><code>preventDefault</code><span class=""> 不执行，浏览器走原生整页跳转，与 PJAX
+                    完全无关。</span></p>
+        </li>
+    </ol>
+    <p class="ds-markdown-paragraph"><strong><span class="">位置微调</span></strong><span class="">：图标容器加
+        </span><code>margin-right: 40px</code><span class="">——因为它被 </span><code>.navbar-collapse</code><span class="">
+            的 </span><code>justify-content-between</code><span class=""> 顶在最右，加右边距就是往左推。</span></p>
+    <hr>
+    <h2><span class="">二、播放列表抽屉（汉堡按钮 + 右侧滑出面板）</span></h2>
+    <p class="ds-markdown-paragraph"><strong><span class="">结构决定</span></strong><span class="">：</span></p>
+    <ul>
+        <li>
+            <p class="ds-markdown-paragraph"><strong><span class="">按钮</span></strong><span class="">放
+                </span><code>Default.cshtml</code><span class="">（VC 里），成为 </span><code>.player-inner</code><span
+                    class=""> flex 布局的一个子项 → 因为 QQ 音乐那种设计就是把列表按钮做进播放条。VC 只负责 HTML 片段，DOM 挂在哪都不影响脚本
+                </span><code>getElementById</code><span class="">。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><strong><span class="">面板</span></strong><span class="">放
+                </span><code>_Layout.cshtml</code><span class="">，</span><strong><span class="">在
+                    </span><code>&lt;footer&gt;</code><span class=""> 外面</span></strong><span class=""> →
+                    原因只有一个但很重要：</span><code>.player-footer</code><span class=""> 有
+                </span><code>position: fixed</code><span class=""> + </span><code>z-index: 1030</code><span
+                    class="">，它会创建一个</span><strong><span class="">局部堆叠上下文</span></strong><span class="">。面板若放进去，它的
+                </span><code>z-index: 1040</code><span class=""> 就只在这个上下文里比较，永远盖不过 footer 外的其他元素。放外面则相对全局算。</span></p>
+        </li>
+    </ul>
+    <p class="ds-markdown-paragraph"><strong><span class="">状态同步机制</span></strong><span class="">（重要设计）：</span></p>
+    <ul>
+        <li>
+            <p class="ds-markdown-paragraph"><span class="">播放器脚本在</span><strong><span
+                        class="">队列/索引变化</span></strong><span class="">时派发 </span><code>player:queue</code><span
+                    class=""> 事件，附带 </span><code>{ queue: [...], index }</code><span class="">。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><span class="">抽屉脚本监听该事件 → 重绘列表或只更新高亮。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><span class="">抽屉打开时通过
+                </span><code>MvPlayer.getQueue() / getIndex()</code><span class=""> 兜底同步一次（应对 PJAX 切换后
+                </span><code>_lastKey</code><span class=""> 未初始化的情况）。</span></p>
+        </li>
+    </ul>
+    <p class="ds-markdown-paragraph"><strong><span class="">为什么不用 </span><code>player:change</code></strong><span
+            class="">：那个事件在播放/暂停时也触发，用它重绘会导致"点一下暂停、抽屉滚动条跳回顶部"。区分"队列变了"和"播放状态变了"是关键。</span></p>
+    <p class="ds-markdown-paragraph"><strong><span class="">重绘条件用
+            </span><code>key = queue.map(x =&gt; x.hash).join('|')</code></strong><span class="">：只有成员真正变化时才全量重绘
+            DOM；索引变了只 </span><code>updateHighlight</code><span class="">。</span></p>
+    <hr>
+    <h2><span class="">三、Detail.cshtml 播放按钮语义改造</span></h2>
+    <p class="ds-markdown-paragraph"><strong><span class="">需求</span></strong><span class="">：点播放时——</span></p>
+    <ul>
+        <li>
+            <p class="ds-markdown-paragraph"><span class="">队列空 → 当作第一首，播。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><span class="">歌已在队列里 → 跳到那一首，播。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><span class="">歌不在队列里 → 插到</span><strong><span
+                        class="">当前曲目之后</span></strong><span class="">，播。</span></p>
+        </li>
+    </ul>
+    <p class="ds-markdown-paragraph"><strong><span class="">核心实现 </span><code>playOrInsert(item)</code></strong><span
+            class="">：</span></p>
+    <div class="md-code-block md-code-block-light">
+        <div class="md-code-block-banner-wrap">
+            <div class="md-code-block-banner md-code-block-banner-lite">
+                <div class="_121d384">
+                    <div class="d2a24f03"><span class="d813de27">js</span></div>
+                    <div class="d2a24f03 _246a029">
+                        <div class="efa13877">
+                            <div role="button"
+                                class="ds-button ds-button--borderlessNeutral ds-button--borderless ds-button--capsule ds-button--xs ds-button--icon-relative-m ds-button--min-width _64bb515"
+                                tabindex="0">
+                                <div class="ds-button__background"></div>
+                                <div class="ds-button__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M6.14929 4.02032C7.11197 4.02032 7.87983 4.02016 8.49597 4.07598C9.12128 4.13269 9.65792 4.25188 10.1415 4.53106C10.7202 4.8653 11.2008 5.3459 11.535 5.92462C11.8142 6.40818 11.9334 6.94481 11.9901 7.57012C12.0459 8.18625 12.0458 8.95419 12.0458 9.9168C12.0458 10.8795 12.0459 11.6473 11.9901 12.2635C11.9334 12.8888 11.8142 13.4254 11.535 13.909C11.2008 14.4877 10.7202 14.9683 10.1415 15.3025C9.65792 15.5817 9.12128 15.7009 8.49597 15.7576C7.87984 15.8134 7.11196 15.8133 6.14929 15.8133C5.18667 15.8133 4.41874 15.8134 3.80261 15.7576C3.1773 15.7009 2.64067 15.5817 2.1571 15.3025C1.5784 14.9683 1.09778 14.4877 0.76355 13.909C0.484366 13.4254 0.365184 12.8888 0.308472 12.2635C0.252649 11.6473 0.252808 10.8795 0.252808 9.9168C0.252808 8.95418 0.252664 8.18625 0.308472 7.57012C0.365184 6.94481 0.484366 6.40818 0.76355 5.92462C1.09777 5.34589 1.57839 4.86529 2.1571 4.53106C2.64067 4.25188 3.1773 4.13269 3.80261 4.07598C4.41874 4.02017 5.18666 4.02032 6.14929 4.02032ZM6.14929 5.37774C5.16181 5.37774 4.46634 5.37761 3.92566 5.42657C3.39434 5.47472 3.07859 5.56574 2.83582 5.70587C2.4632 5.92106 2.15354 6.2307 1.93835 6.60333C1.79823 6.8461 1.70721 7.16185 1.65906 7.69317C1.6101 8.23385 1.61023 8.92933 1.61023 9.9168C1.61023 10.9043 1.61009 11.5998 1.65906 12.1404C1.70721 12.6717 1.79823 12.9875 1.93835 13.2303C2.15356 13.6029 2.46321 13.9126 2.83582 14.1277C3.07859 14.2679 3.39434 14.3589 3.92566 14.407C4.46634 14.456 5.16182 14.4559 6.14929 14.4559C7.13682 14.4559 7.83224 14.456 8.37292 14.407C8.90425 14.3589 9.21999 14.2679 9.46277 14.1277C9.83535 13.9126 10.145 13.6029 10.3602 13.2303C10.5004 12.9875 10.5914 12.6717 10.6395 12.1404C10.6885 11.5998 10.6884 10.9043 10.6884 9.9168C10.6884 8.92934 10.6885 8.23384 10.6395 7.69317C10.5914 7.16185 10.5004 6.8461 10.3602 6.60333C10.1451 6.23071 9.83536 5.92107 9.46277 5.70587C9.21999 5.56574 8.90424 5.47472 8.37292 5.42657C7.83224 5.3776 7.13682 5.37774 6.14929 5.37774ZM9.80164 0.367975C10.7638 0.367975 11.5314 0.36788 12.1473 0.423639C12.7726 0.480307 13.3093 0.598759 13.7928 0.877741C14.3717 1.21192 14.8521 1.69355 15.1864 2.27227C15.4655 2.75574 15.5857 3.29164 15.6425 3.9168C15.6983 4.53301 15.6971 5.3016 15.6971 6.26446V7.82989C15.6971 8.29264 15.6989 8.58993 15.6649 8.84844C15.4668 10.3525 14.401 11.5738 12.9833 11.9988V10.5467C13.6973 10.1903 14.2105 9.49662 14.3192 8.67169C14.3387 8.52347 14.3407 8.3358 14.3407 7.82989V6.26446C14.3407 5.27706 14.3398 4.58149 14.2909 4.04083C14.2428 3.50968 14.1526 3.19372 14.0126 2.95098C13.7974 2.57849 13.4876 2.26869 13.1151 2.05352C12.8724 1.91347 12.5564 1.82237 12.0253 1.77423C11.4847 1.72528 10.7888 1.7254 9.80164 1.7254H7.71472C6.7562 1.72558 5.92665 2.27697 5.52332 3.07891H4.07019C4.54221 1.51132 5.9932 0.368186 7.71472 0.367975H9.80164Z"
+                                            fill="currentColor"></path>
+                                    </svg></div><span class="ds-button__content"><span
+                                        class="code-info-button-text">复制</span></span>
+                            </div>
+                            <div role="button"
+                                class="ds-button ds-button--borderlessNeutral ds-button--borderless ds-button--capsule ds-button--xs ds-button--icon-relative-m ds-button--min-width"
+                                tabindex="0">
+                                <div class="ds-button__background"></div>
+                                <div class="ds-button__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M15.3695 11.411L15.1234 12.8866C14.8869 14.3042 13.6603 15.3436 12.223 15.3436H3.77673C2.33958 15.3434 1.1128 14.3042 0.876343 12.8866L0.630249 11.411L2.05408 11.1747L2.29919 12.6493C2.41973 13.3713 3.04475 13.9001 3.77673 13.9003H12.223C12.9551 13.9002 13.58 13.3713 13.7006 12.6493L13.9457 11.1747L15.3695 11.411ZM8.72205 8.994C8.77717 8.93934 8.83792 8.88106 8.90271 8.81627L12.4828 5.23424L13.5043 6.25572L9.92224 9.8358C9.6395 10.1185 9.38763 10.3732 9.15857 10.5575C8.91892 10.7503 8.63953 10.9224 8.2865 10.9784C8.09711 11.0083 7.90363 11.0083 7.71423 10.9784C7.36106 10.9224 7.0809 10.7503 6.84119 10.5575C6.61215 10.3732 6.36022 10.1185 6.07751 9.8358L2.49646 6.25572L3.51697 5.23424L7.09705 8.81627C7.16219 8.88142 7.22331 8.94006 7.27869 8.99498V1.3065H8.72205V8.994Z"
+                                            fill="currentColor"></path>
+                                    </svg></div><span class="ds-button__content"><span
+                                        class="code-info-button-text">下载</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <pre><span><span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> queue<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> queue<span class="token operator">=</span><span class="token punctuation">[</span>item<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token function">load</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token punctuation">}</span>   <span class="token comment">// 空</span></span>
+<span><span class="token keyword">const</span> existingIdx <span class="token operator">=</span> queue<span class="token punctuation">.</span><span class="token function">findIndex</span><span class="token punctuation">(</span><span class="token parameter">x</span> <span class="token operator">=&gt;</span> x<span class="token punctuation">.</span>hash <span class="token operator">===</span> item<span class="token punctuation">.</span>hash<span class="token punctuation">)</span><span class="token punctuation">;</span></span>
+<span><span class="token keyword">if</span> <span class="token punctuation">(</span>existingIdx <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment">/* 已在，跳到或切换 */</span> <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token punctuation">}</span>                      <span class="token comment">// 已存在</span></span>
+<span>queue<span class="token punctuation">.</span><span class="token function">splice</span><span class="token punctuation">(</span>index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> item<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token function">load</span><span class="token punctuation">(</span>index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>                       <span class="token comment">// 插入并播</span></span></pre>
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"
+            class="_9bc997d _33882ae">
+            <path d="M-5.24537e-07 0C-2.34843e-07 6.62742 5.37258 12 12 12L0 12L-5.24537e-07 0Z" fill="currentColor">
+            </path>
+        </svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"
+            class="_9bc997d _28d7e84">
+            <path d="M-5.24537e-07 0C-2.34843e-07 6.62742 5.37258 12 12 12L0 12L-5.24537e-07 0Z" fill="currentColor">
+            </path>
+        </svg>
+    </div>
+    <p class="ds-markdown-paragraph"><strong><span class="">与 </span><code>playNext</code><span
+                class="">（下一首播放）的区别</span></strong><span class="">——这是本轮语义上最容易搞混的地方：</span></p>
+    <div class="ds-scroll-area ds-scroll-area--show-on-focus-within ds-scroll-area--enabled _1210dd7 c03cafe9"
+        style="--container-height: 137px;">
+        <div class="ds-scroll-area__gutters"
+            style="--container-height: 137px; position: sticky; top: 0px; left: 0px; right: 0px; width: 100%; height: 0px;">
+            <div class="ds-scroll-area__horizontal-gutter"
+                style="left: 0px; right: 0px; display: block; top: calc(var(--container-height) - 14px); height: 8px;">
+                <div class="ds-scroll-area__horizontal-bar" style="display: none;"></div>
+            </div>
+            <div class="ds-scroll-area__vertical-gutter"
+                style="right: 3px; top: 3px; bottom: calc(0px - var(--container-height) + 3px); width: 8px;">
+                <div class="ds-scroll-area__vertical-bar" style="display: none;"></div>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th><span class="">方法</span></th>
+                    <th><span class="">语义</span></th>
+                    <th><span class="">行为</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>playOrInsert</code></td>
+                    <td><span class="">"</span><strong><span class="">播放</span></strong><span class="">这首歌"</span></td>
+                    <td><span class="">插入后</span><strong><span class="">立即播</span></strong></td>
+                </tr>
+                <tr>
+                    <td><code>playNext</code></td>
+                    <td><span class="">"</span><strong><span class="">下一首</span></strong><span class="">播这首歌"</span>
+                    </td>
+                    <td><span class="">只插入队列，不切歌</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="ds-markdown-paragraph"><span class="">两者都保留，用途互补。Detail 页的"播放"按钮走 </span><code>playOrInsert</code><span
+            class="">，新的"+号"按钮走 </span><code>playNext</code><span class="">。</span></p>
+    <p class="ds-markdown-paragraph"><strong><span class="">按钮的 UI 变化</span></strong><span
+            class="">：原来每行一个播放按钮，现在两个（</span><code>ICON_NEXT</code><span class="">
+            加号在左，</span><code>ICON_PLAY</code><span class=""> 在右），用 </span><code>d-flex gap-1</code><span class="">
+            包起来。</span></p>
+    <p class="ds-markdown-paragraph"><strong><span class="">"当前曲目"高亮靠 </span><code>_index</code><span class=""> 而不是 hash
+                比对</span></strong><span class="">：为了未来允许队列里出现重复 hash 时仍准确（虽然当前 </span><code>playNext</code><span
+            class=""> 会去重）。</span></p>
+    <hr>
+    <h2><span class="">四、抽屉按钮从"浮空"改到"播放条内"</span></h2>
+    <p class="ds-markdown-paragraph"><strong><span class="">原方案</span></strong><span
+            class="">：</span><code>.playlist-toggle</code><span class=""> 用
+        </span><code>position: fixed; right: 16px; bottom: 96px</code><span class=""> 浮在页面右下角。</span></p>
+    <p class="ds-markdown-paragraph"><strong><span class="">改成</span></strong><span class="">：放进
+        </span><code>.player-inner</code><span class=""> 末尾的 </span><code>.player-extra</code><span class=""> 里，成为 flex
+            子项。</span></p>
+    <p class="ds-markdown-paragraph"><strong><span class="">CSS 层面的彻底改写</span></strong><span class="">：</span></p>
+    <div class="md-code-block md-code-block-light">
+        <div class="md-code-block-banner-wrap">
+            <div class="md-code-block-banner md-code-block-banner-lite">
+                <div class="_121d384">
+                    <div class="d2a24f03"><span class="d813de27">css</span></div>
+                    <div class="d2a24f03 _246a029">
+                        <div class="efa13877">
+                            <div role="button"
+                                class="ds-button ds-button--borderlessNeutral ds-button--borderless ds-button--capsule ds-button--xs ds-button--icon-relative-m ds-button--min-width _64bb515"
+                                tabindex="0">
+                                <div class="ds-button__background"></div>
+                                <div class="ds-button__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M6.14929 4.02032C7.11197 4.02032 7.87983 4.02016 8.49597 4.07598C9.12128 4.13269 9.65792 4.25188 10.1415 4.53106C10.7202 4.8653 11.2008 5.3459 11.535 5.92462C11.8142 6.40818 11.9334 6.94481 11.9901 7.57012C12.0459 8.18625 12.0458 8.95419 12.0458 9.9168C12.0458 10.8795 12.0459 11.6473 11.9901 12.2635C11.9334 12.8888 11.8142 13.4254 11.535 13.909C11.2008 14.4877 10.7202 14.9683 10.1415 15.3025C9.65792 15.5817 9.12128 15.7009 8.49597 15.7576C7.87984 15.8134 7.11196 15.8133 6.14929 15.8133C5.18667 15.8133 4.41874 15.8134 3.80261 15.7576C3.1773 15.7009 2.64067 15.5817 2.1571 15.3025C1.5784 14.9683 1.09778 14.4877 0.76355 13.909C0.484366 13.4254 0.365184 12.8888 0.308472 12.2635C0.252649 11.6473 0.252808 10.8795 0.252808 9.9168C0.252808 8.95418 0.252664 8.18625 0.308472 7.57012C0.365184 6.94481 0.484366 6.40818 0.76355 5.92462C1.09777 5.34589 1.57839 4.86529 2.1571 4.53106C2.64067 4.25188 3.1773 4.13269 3.80261 4.07598C4.41874 4.02017 5.18666 4.02032 6.14929 4.02032ZM6.14929 5.37774C5.16181 5.37774 4.46634 5.37761 3.92566 5.42657C3.39434 5.47472 3.07859 5.56574 2.83582 5.70587C2.4632 5.92106 2.15354 6.2307 1.93835 6.60333C1.79823 6.8461 1.70721 7.16185 1.65906 7.69317C1.6101 8.23385 1.61023 8.92933 1.61023 9.9168C1.61023 10.9043 1.61009 11.5998 1.65906 12.1404C1.70721 12.6717 1.79823 12.9875 1.93835 13.2303C2.15356 13.6029 2.46321 13.9126 2.83582 14.1277C3.07859 14.2679 3.39434 14.3589 3.92566 14.407C4.46634 14.456 5.16182 14.4559 6.14929 14.4559C7.13682 14.4559 7.83224 14.456 8.37292 14.407C8.90425 14.3589 9.21999 14.2679 9.46277 14.1277C9.83535 13.9126 10.145 13.6029 10.3602 13.2303C10.5004 12.9875 10.5914 12.6717 10.6395 12.1404C10.6885 11.5998 10.6884 10.9043 10.6884 9.9168C10.6884 8.92934 10.6885 8.23384 10.6395 7.69317C10.5914 7.16185 10.5004 6.8461 10.3602 6.60333C10.1451 6.23071 9.83536 5.92107 9.46277 5.70587C9.21999 5.56574 8.90424 5.47472 8.37292 5.42657C7.83224 5.3776 7.13682 5.37774 6.14929 5.37774ZM9.80164 0.367975C10.7638 0.367975 11.5314 0.36788 12.1473 0.423639C12.7726 0.480307 13.3093 0.598759 13.7928 0.877741C14.3717 1.21192 14.8521 1.69355 15.1864 2.27227C15.4655 2.75574 15.5857 3.29164 15.6425 3.9168C15.6983 4.53301 15.6971 5.3016 15.6971 6.26446V7.82989C15.6971 8.29264 15.6989 8.58993 15.6649 8.84844C15.4668 10.3525 14.401 11.5738 12.9833 11.9988V10.5467C13.6973 10.1903 14.2105 9.49662 14.3192 8.67169C14.3387 8.52347 14.3407 8.3358 14.3407 7.82989V6.26446C14.3407 5.27706 14.3398 4.58149 14.2909 4.04083C14.2428 3.50968 14.1526 3.19372 14.0126 2.95098C13.7974 2.57849 13.4876 2.26869 13.1151 2.05352C12.8724 1.91347 12.5564 1.82237 12.0253 1.77423C11.4847 1.72528 10.7888 1.7254 9.80164 1.7254H7.71472C6.7562 1.72558 5.92665 2.27697 5.52332 3.07891H4.07019C4.54221 1.51132 5.9932 0.368186 7.71472 0.367975H9.80164Z"
+                                            fill="currentColor"></path>
+                                    </svg></div><span class="ds-button__content"><span
+                                        class="code-info-button-text">复制</span></span>
+                            </div>
+                            <div role="button"
+                                class="ds-button ds-button--borderlessNeutral ds-button--borderless ds-button--capsule ds-button--xs ds-button--icon-relative-m ds-button--min-width"
+                                tabindex="0">
+                                <div class="ds-button__background"></div>
+                                <div class="ds-button__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M15.3695 11.411L15.1234 12.8866C14.8869 14.3042 13.6603 15.3436 12.223 15.3436H3.77673C2.33958 15.3434 1.1128 14.3042 0.876343 12.8866L0.630249 11.411L2.05408 11.1747L2.29919 12.6493C2.41973 13.3713 3.04475 13.9001 3.77673 13.9003H12.223C12.9551 13.9002 13.58 13.3713 13.7006 12.6493L13.9457 11.1747L15.3695 11.411ZM8.72205 8.994C8.77717 8.93934 8.83792 8.88106 8.90271 8.81627L12.4828 5.23424L13.5043 6.25572L9.92224 9.8358C9.6395 10.1185 9.38763 10.3732 9.15857 10.5575C8.91892 10.7503 8.63953 10.9224 8.2865 10.9784C8.09711 11.0083 7.90363 11.0083 7.71423 10.9784C7.36106 10.9224 7.0809 10.7503 6.84119 10.5575C6.61215 10.3732 6.36022 10.1185 6.07751 9.8358L2.49646 6.25572L3.51697 5.23424L7.09705 8.81627C7.16219 8.88142 7.22331 8.94006 7.27869 8.99498V1.3065H8.72205V8.994Z"
+                                            fill="currentColor"></path>
+                                    </svg></div><span class="ds-button__content"><span
+                                        class="code-info-button-text">下载</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <pre><span><span class="token comment">/* 原来 */</span></span>
+<span><span class="token selector">.playlist-toggle</span> <span class="token punctuation">{</span> <span class="token property">position</span><span class="token punctuation">:</span> fixed<span class="token punctuation">;</span> <span class="token property">right</span><span class="token punctuation">:</span> 16px<span class="token punctuation">;</span> <span class="token property">bottom</span><span class="token punctuation">:</span> 96px<span class="token punctuation">;</span> <span class="token property">border-radius</span><span class="token punctuation">:</span> 21px<span class="token punctuation">;</span> ... <span class="token punctuation">}</span></span>
+<span></span>
+<span><span class="token comment">/* 现在 */</span></span>
+<span><span class="token selector">.playlist-toggle</span> <span class="token punctuation">{</span></span>
+<span>    <span class="token property">width</span><span class="token punctuation">:</span> 38px<span class="token punctuation">;</span> <span class="token property">height</span><span class="token punctuation">:</span> 38px<span class="token punctuation">;</span> <span class="token property">border-radius</span><span class="token punctuation">:</span> 8px<span class="token punctuation">;</span></span>
+<span>    <span class="token property">background</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span> <span class="token property">border</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span> <span class="token property">color</span><span class="token punctuation">:</span> #333<span class="token punctuation">;</span></span>
+<span>    <span class="token comment">/* 不再有任何 position */</span></span>
+<span><span class="token punctuation">}</span></span></pre><svg xmlns="http://www.w3.org/2000/svg" width="12"
+            height="12" viewBox="0 0 12 12" fill="none" class="_9bc997d _33882ae">
+            <path d="M-5.24537e-07 0C-2.34843e-07 6.62742 5.37258 12 12 12L0 12L-5.24537e-07 0Z" fill="currentColor">
+            </path>
+        </svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"
+            class="_9bc997d _28d7e84">
+            <path d="M-5.24537e-07 0C-2.34843e-07 6.62742 5.37258 12 12 12L0 12L-5.24537e-07 0Z" fill="currentColor">
+            </path>
+        </svg>
+    </div>
+    <p class="ds-markdown-paragraph"><strong><span class="">副作用</span></strong><span
+            class="">：</span><code>body.playlist-open .playlist-toggle</code><span class=""> 原来是
+        </span><code>opacity: 0</code><span class=""> 隐藏按钮（因为浮空按钮会挡面板）。现在按钮在播放条里不挡面板，改成</span><strong><span
+                class="">高亮</span></strong><span class="">：</span></p>
+    <div class="md-code-block md-code-block-light">
+        <div class="md-code-block-banner-wrap">
+            <div class="md-code-block-banner md-code-block-banner-lite">
+                <div class="_121d384">
+                    <div class="d2a24f03"><span class="d813de27">css</span></div>
+                    <div class="d2a24f03 _246a029">
+                        <div class="efa13877">
+                            <div role="button"
+                                class="ds-button ds-button--borderlessNeutral ds-button--borderless ds-button--capsule ds-button--xs ds-button--icon-relative-m ds-button--min-width _64bb515"
+                                tabindex="0">
+                                <div class="ds-button__background"></div>
+                                <div class="ds-button__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M6.14929 4.02032C7.11197 4.02032 7.87983 4.02016 8.49597 4.07598C9.12128 4.13269 9.65792 4.25188 10.1415 4.53106C10.7202 4.8653 11.2008 5.3459 11.535 5.92462C11.8142 6.40818 11.9334 6.94481 11.9901 7.57012C12.0459 8.18625 12.0458 8.95419 12.0458 9.9168C12.0458 10.8795 12.0459 11.6473 11.9901 12.2635C11.9334 12.8888 11.8142 13.4254 11.535 13.909C11.2008 14.4877 10.7202 14.9683 10.1415 15.3025C9.65792 15.5817 9.12128 15.7009 8.49597 15.7576C7.87984 15.8134 7.11196 15.8133 6.14929 15.8133C5.18667 15.8133 4.41874 15.8134 3.80261 15.7576C3.1773 15.7009 2.64067 15.5817 2.1571 15.3025C1.5784 14.9683 1.09778 14.4877 0.76355 13.909C0.484366 13.4254 0.365184 12.8888 0.308472 12.2635C0.252649 11.6473 0.252808 10.8795 0.252808 9.9168C0.252808 8.95418 0.252664 8.18625 0.308472 7.57012C0.365184 6.94481 0.484366 6.40818 0.76355 5.92462C1.09777 5.34589 1.57839 4.86529 2.1571 4.53106C2.64067 4.25188 3.1773 4.13269 3.80261 4.07598C4.41874 4.02017 5.18666 4.02032 6.14929 4.02032ZM6.14929 5.37774C5.16181 5.37774 4.46634 5.37761 3.92566 5.42657C3.39434 5.47472 3.07859 5.56574 2.83582 5.70587C2.4632 5.92106 2.15354 6.2307 1.93835 6.60333C1.79823 6.8461 1.70721 7.16185 1.65906 7.69317C1.6101 8.23385 1.61023 8.92933 1.61023 9.9168C1.61023 10.9043 1.61009 11.5998 1.65906 12.1404C1.70721 12.6717 1.79823 12.9875 1.93835 13.2303C2.15356 13.6029 2.46321 13.9126 2.83582 14.1277C3.07859 14.2679 3.39434 14.3589 3.92566 14.407C4.46634 14.456 5.16182 14.4559 6.14929 14.4559C7.13682 14.4559 7.83224 14.456 8.37292 14.407C8.90425 14.3589 9.21999 14.2679 9.46277 14.1277C9.83535 13.9126 10.145 13.6029 10.3602 13.2303C10.5004 12.9875 10.5914 12.6717 10.6395 12.1404C10.6885 11.5998 10.6884 10.9043 10.6884 9.9168C10.6884 8.92934 10.6885 8.23384 10.6395 7.69317C10.5914 7.16185 10.5004 6.8461 10.3602 6.60333C10.1451 6.23071 9.83536 5.92107 9.46277 5.70587C9.21999 5.56574 8.90424 5.47472 8.37292 5.42657C7.83224 5.3776 7.13682 5.37774 6.14929 5.37774ZM9.80164 0.367975C10.7638 0.367975 11.5314 0.36788 12.1473 0.423639C12.7726 0.480307 13.3093 0.598759 13.7928 0.877741C14.3717 1.21192 14.8521 1.69355 15.1864 2.27227C15.4655 2.75574 15.5857 3.29164 15.6425 3.9168C15.6983 4.53301 15.6971 5.3016 15.6971 6.26446V7.82989C15.6971 8.29264 15.6989 8.58993 15.6649 8.84844C15.4668 10.3525 14.401 11.5738 12.9833 11.9988V10.5467C13.6973 10.1903 14.2105 9.49662 14.3192 8.67169C14.3387 8.52347 14.3407 8.3358 14.3407 7.82989V6.26446C14.3407 5.27706 14.3398 4.58149 14.2909 4.04083C14.2428 3.50968 14.1526 3.19372 14.0126 2.95098C13.7974 2.57849 13.4876 2.26869 13.1151 2.05352C12.8724 1.91347 12.5564 1.82237 12.0253 1.77423C11.4847 1.72528 10.7888 1.7254 9.80164 1.7254H7.71472C6.7562 1.72558 5.92665 2.27697 5.52332 3.07891H4.07019C4.54221 1.51132 5.9932 0.368186 7.71472 0.367975H9.80164Z"
+                                            fill="currentColor"></path>
+                                    </svg></div><span class="ds-button__content"><span
+                                        class="code-info-button-text">复制</span></span>
+                            </div>
+                            <div role="button"
+                                class="ds-button ds-button--borderlessNeutral ds-button--borderless ds-button--capsule ds-button--xs ds-button--icon-relative-m ds-button--min-width"
+                                tabindex="0">
+                                <div class="ds-button__background"></div>
+                                <div class="ds-button__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M15.3695 11.411L15.1234 12.8866C14.8869 14.3042 13.6603 15.3436 12.223 15.3436H3.77673C2.33958 15.3434 1.1128 14.3042 0.876343 12.8866L0.630249 11.411L2.05408 11.1747L2.29919 12.6493C2.41973 13.3713 3.04475 13.9001 3.77673 13.9003H12.223C12.9551 13.9002 13.58 13.3713 13.7006 12.6493L13.9457 11.1747L15.3695 11.411ZM8.72205 8.994C8.77717 8.93934 8.83792 8.88106 8.90271 8.81627L12.4828 5.23424L13.5043 6.25572L9.92224 9.8358C9.6395 10.1185 9.38763 10.3732 9.15857 10.5575C8.91892 10.7503 8.63953 10.9224 8.2865 10.9784C8.09711 11.0083 7.90363 11.0083 7.71423 10.9784C7.36106 10.9224 7.0809 10.7503 6.84119 10.5575C6.61215 10.3732 6.36022 10.1185 6.07751 9.8358L2.49646 6.25572L3.51697 5.23424L7.09705 8.81627C7.16219 8.88142 7.22331 8.94006 7.27869 8.99498V1.3065H8.72205V8.994Z"
+                                            fill="currentColor"></path>
+                                    </svg></div><span class="ds-button__content"><span
+                                        class="code-info-button-text">下载</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <pre><span><span class="token selector">body.playlist-open .playlist-toggle</span> <span class="token punctuation">{</span></span>
+<span>    <span class="token property">background</span><span class="token punctuation">:</span> #eaf2fb<span class="token punctuation">;</span></span>
+<span>    <span class="token property">color</span><span class="token punctuation">:</span> #1b6ec2<span class="token punctuation">;</span></span>
+<span><span class="token punctuation">}</span></span></pre><svg xmlns="http://www.w3.org/2000/svg" width="12"
+            height="12" viewBox="0 0 12 12" fill="none" class="_9bc997d _33882ae">
+            <path d="M-5.24537e-07 0C-2.34843e-07 6.62742 5.37258 12 12 12L0 12L-5.24537e-07 0Z" fill="currentColor">
+            </path>
+        </svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"
+            class="_9bc997d _28d7e84">
+            <path d="M-5.24537e-07 0C-2.34843e-07 6.62742 5.37258 12 12 12L0 12L-5.24537e-07 0Z" fill="currentColor">
+            </path>
+        </svg>
+    </div>
+    <hr>
+    <h2><span class="">五、小屏按钮"消失"的真实原因</span></h2>
+    <p class="ds-markdown-paragraph"><strong><span class="">症状</span></strong><span
+            class="">：手机宽度下，播放条最右边的列表按钮看不见。</span></p>
+    <p class="ds-markdown-paragraph"><strong><span class="">误诊</span></strong><span class="">：以为是某个
+        </span><code>display: none</code><span class=""> 隐藏了它。</span></p>
+    <p class="ds-markdown-paragraph"><strong><span class="">真相</span></strong><span class="">：它被</span><strong><span
+                class="">挤出视口</span></strong><span class="">了。flex 布局里：</span></p>
+    <ul>
+        <li>
+            <p class="ds-markdown-paragraph"><code>.player-center</code><span class=""> 的
+                </span><code>flex: 1</code><span class=""> 是看起来能缩，但 flex item 默认
+                </span><code>min-width: auto</code><span class=""> —— </span><strong><span
+                        class="">不会小于内容宽度</span></strong><span class="">。它的内容是两个 40px 时间戳 + range + 间隙，最小 ~176px。</span>
+            </p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><code>.player-info</code><span class=""> 是
+                </span><code>width: 260px</code><span class=""> + </span><code>flex-shrink: 0</code><span
+                    class="">。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><span class="">两者加起来就 400px+，320/360 屏上，被顶在最后的
+                </span><code>.player-extra</code><span class=""> 就出视口了。</span></p>
+        </li>
+    </ul>
+    <p class="ds-markdown-paragraph"><strong><span class="">修法</span></strong><span class="">（全在小屏媒体查询内）：</span></p>
+    <ol start="1">
+        <li>
+            <p class="ds-markdown-paragraph"><code>.player-info</code><span class=""> 从
+                </span><code>width: 140px</code><span class=""> 改成
+                </span><code>flex: 0 1 auto; max-width: 110px; min-width: 0</code><span class=""> ——
+                </span><strong><span class="">允许收缩</span></strong><span class="">。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><code>.player-center</code><span class=""> 加
+                </span><code>min-width: 0</code><span class=""> —— 允许压到内容宽度之下，range 自动变短。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><code>.player-meta</code><span class=""> 加
+                </span><code>min-width: 0</code><span class=""> —— 长歌名用省略号，不再撑开父级。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><span class="">各类 </span><code>gap</code><span class=""> /
+                </span><code>padding</code><span class=""> / </span><code>font-size</code><span class=""> 在小屏压缩。</span>
+            </p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><span class="">音量整块 </span><code>display: none</code><span
+                    class="">。</span></p>
+        </li>
+    </ol>
+    <p class="ds-markdown-paragraph"><strong><span class="">结果</span></strong><span class="">：最窄需求从 ~380px 降到
+            ~280px，320px 屏上按钮稳稳可见。</span></p>
+    <hr>
+    <h2><span class="">六、反复出现的一个设计原则</span></h2>
+    <p class="ds-markdown-paragraph"><span class="">这三处改动（状态图标、列表按钮、播放逻辑）碰到的是同一个东西：</span><strong><span class="">PJAX +
+                全局播放器 + VC 组件三者交叠时的边界</span></strong><span class="">。归纳几条：</span></p>
+    <ol start="1">
+        <li>
+            <p class="ds-markdown-paragraph"><strong><span class="">PJAX 只替换 </span><code>#app-main</code></strong><span
+                    class="">，任何在它之外的 UI（导航栏状态图标、播放条、抽屉面板）在 PJAX 切换时都</span><strong><span
+                        class="">不会重渲染</span></strong><span class="">。</span></p>
+            <ul>
+                <li>
+                    <p class="ds-markdown-paragraph"><span class="">好处：播放不断、抽屉不闪。</span></p>
+                </li>
+                <li>
+                    <p class="ds-markdown-paragraph"><span class="">代价：服务端状态（比如 </span><code>IsBurned</code><span
+                            class="">）改变后图标不会自动更新，得靠 </span><code>pjax:load</code><span class="">
+                            事件手动同步（如果真有这个需求的话）。</span></p>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><strong><span class="">导航到不包含 </span><code>#app-main</code><span class="">
+                        的页面</span></strong><span class="">时，PJAX 会静默放弃并</span><strong><span
+                        class="">吞掉点击</span></strong><span class="">。要么给链接加 </span><code>data-no-pjax</code><span
+                    class=""> 走原生跳转，要么确保目标页面也带 </span><code>#app-main</code><span class="">。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><strong><code>position: fixed</code><span class=""> +
+                    </span><code>z-index</code><span class=""> 会创建局部堆叠上下文</span></strong><span
+                    class="">。想让某个元素相对全局排层级，它就不能放在有 </span><code>z-index</code><span class=""> 的祖先里。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><strong><span class="">VC 只负责 HTML</span></strong><span class="">。按钮放
+                    VC、面板放 Layout、CSS 全在 Layout 的 </span><code>&lt;style&gt;</code><span
+                    class="">，脚本一行不用改——这是本轮最省事的分工。</span></p>
+        </li>
+        <li>
+            <p class="ds-markdown-paragraph"><strong><span class="">全局状态（</span><code>queue</code><span class=""> /
+                    </span><code>index</code><span class="">）只能有一份真相</span></strong><span
+                    class="">，就在播放器脚本里。其他模块（抽屉、Detail）都通过 </span><code>MvPlayer.getXxx()</code><span class=""> 或
+                </span><code>player:queue</code><span class=""> 事件</span><strong><span class="">读取</span></strong><span
+                    class="">，不自己维护副本。</span></p>
+        </li>
+    </ol>
+</div>

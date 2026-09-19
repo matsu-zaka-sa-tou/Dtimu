@@ -1,16 +1,16 @@
-﻿@{
+﻿@* WebDtimu.Dependency\Views\Shared\Components\MusicCard\ *@
+
+@{
     var guid = Guid.NewGuid().ToString();
 }
 
 <style>
-    /* 网格容器 */
     .album-grid {
         display: grid;
         grid-auto-rows: 120px;
-        gap: 0px; /* 去掉间距 */
+        gap: 0px;
     }
 
-    /* 图片卡片 */
     .album-item img {
         width: 120px;
         height: 120px;
@@ -19,7 +19,6 @@
         display: block;
     }
 
-    /* 纯色文字卡片 */
     .album-text {
         width: 120px;
         height: 120px;
@@ -32,9 +31,8 @@
         cursor: pointer;
     }
 
-    /* 鼠标悬浮预览框 */
     .preview-box {
-        position: fixed; /* 相对于视口 */
+        position: fixed;
         width: 200px;
         height: 200px;
         border: 4px solid white;
@@ -86,25 +84,172 @@
 </div>
 
 <script>
+    // —— 与 WebDtimu.Dependency.TextCoverUtil 视觉同步的前端 SVG 封面 ——
+    (function () {
+        const COLORS = [
+            [49, 91, 37], [31, 78, 64], [39, 67, 105], [54, 75, 94],
+            [72, 52, 91], [95, 49, 78], [106, 47, 52], [113, 56, 48],
+            [92, 67, 45], [61, 66, 70], [34, 81, 84], [50, 58, 102],
+            [76, 85, 42], [82, 60, 53]
+        ];
+
+        const FONT = '"Microsoft YaHei UI","Microsoft YaHei","Segoe UI",Arial,sans-serif';
+        const W = 420, H = 420;
+        const LEFT = 22, BOTTOM = 18;
+        const NAME_MAX_W = 220, NAME_MAX_H = 165;
+        const BIG_FONT = 300;
+
+        let _ctx = null;
+        function ctx() {
+            if (!_ctx) _ctx = document.createElement('canvas').getContext('2d');
+            return _ctx;
+        }
+
+        function pickColor(text) {
+            let h = 2166136261 >>> 0;
+            for (const ch of (text || '')) {
+                h ^= ch.codePointAt(0);
+                h = Math.imul(h, 16777619) >>> 0;
+            }
+            const c = COLORS[h % COLORS.length];
+            return `rgb(${c[0]},${c[1]},${c[2]})`;
+        }
+
+        function firstElement(text) {
+            text = (text || '').trim();
+            if (!text) return '?';
+            if (window.Intl && Intl.Segmenter) {
+                const seg = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+                for (const s of seg.segment(text)) return s.segment.toUpperCase();
+            }
+            return Array.from(text)[0].toUpperCase();
+        }
+
+        function wrap(c, text, maxW) {
+            const lines = [];
+            let cur = '';
+            for (const ch of text) {
+                const t = cur + ch;
+                if (c.measureText(t).width > maxW && cur) {
+                    lines.push(cur);
+                    cur = ch;
+                } else {
+                    cur = t;
+                }
+            }
+            if (cur) lines.push(cur);
+            return lines.length ? lines : [''];
+        }
+
+        function esc(s) {
+            return String(s).replace(/[<>&"']/g, ch => ({
+                '<': '&lt;', '>': '&gt;', '&': '&amp;',
+                '"': '&quot;', "'": '&apos;'
+            }[ch]));
+        }
+
+        function generateCoverSvg(text) {
+            text = (text || '').trim() || '?';
+            const c = ctx();
+
+            const big = firstElement(text);
+            c.font = `bold ${BIG_FONT}px ${FONT}`;
+            const bm = c.measureText(big);
+
+            const bAsc = bm.actualBoundingBoxAscent || BIG_FONT * 0.85;
+            const bDesc = bm.actualBoundingBoxDescent || BIG_FONT * 0.15;
+            const bW = bm.width || BIG_FONT;
+            const bH = bAsc + bDesc;
+
+            const bigLeft = W - bW * 0.68;
+            const bigTop  = H - bH * 0.72;
+            const bigBase = bigTop + bAsc;
+
+            let fontSize = 25, lines = [text], lineH = 25 * 1.25, lineAsc = 25 * 0.85;
+            for (let s = 25; s >= 15; s--) {
+                c.font = `${s}px ${FONT}`;
+                const ln = wrap(c, text, NAME_MAX_W);
+                const lh = s * 1.25;
+                if (ln.length * lh <= NAME_MAX_H || s === 15) {
+                    fontSize = s;
+                    lines = ln;
+                    lineH = lh;
+                    const m = c.measureText('中');
+                    lineAsc = m.actualBoundingBoxAscent || s * 0.85;
+                    break;
+                }
+            }
+
+            const blockH   = lines.length * lineH;
+            const blockTop = H - BOTTOM - blockH;
+
+            const tspans = lines.map((line, i) =>
+                `<tspan x="${LEFT}" y="${(blockTop + i * lineH + lineAsc).toFixed(2)}">${esc(line)}</tspan>`
+            ).join('');
+
+            const bg = pickColor(text);
+
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
+                + `<rect width="${W}" height="${H}" fill="${bg}"/>`
+                + `<text x="${bigLeft.toFixed(2)}" y="${bigBase.toFixed(2)}" `
+                + `font-family='${FONT}' font-size="${BIG_FONT}" font-weight="bold" fill="#fff">`
+                + esc(big)
+                + `</text>`
+                + `<text font-family='${FONT}' font-size="${fontSize}" fill="#fff">`
+                + tspans
+                + `</text>`
+                + `</svg>`;
+        }
+
+        function coverSvgDataUrl(text) {
+            return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(generateCoverSvg(text));
+        }
+
+        window.generateCoverSvg = generateCoverSvg;
+        window.coverSvgDataUrl  = coverSvgDataUrl;
+    })();
+</script>
+
+<script>
     (() => {
-        document.addEventListener("DOMContentLoaded", async () => {
+        async function init() {
             const cardBase = document.getElementById('@guid');
+            if (!cardBase) return;
+
             const Size = 120;
-            const PREVIEW_OFFSET = 16; // 鼠标偏移量
             const PREW = 200, PREH = 200;
 
             const chrome = cardBase.querySelector('.card-chrome');
             const albumGrid = chrome.querySelector('.album-grid');
             const preview = chrome.querySelector('.preview-box');
 
-            const albumsDict = await fetch('/api/Lists/AlumbList').then(r => r.json());
-            const pictureInfo = await fetch('/api/Lists/PicturesList').then(r => r.json());
+            let albumsDict;
+            try {
+                albumsDict = await fetch('/api/Lists/AlumbList').then(r => r.json());
+            } catch (e) {
+                chrome.textContent = '加载音乐失败：' + e.message;
+                console.error(e);
+                return;
+            }
 
             const albumsInfo = Object.entries(albumsDict).map(([key, value]) => ({
                 key, ...value
             }));
 
-            // 更新列数
+            const _svgCache = new Map();
+
+            function coverUrl(item) {
+                if (item.pictures && item.pictures.length) {
+                    return '/Cover/' + encodeURIComponent(item.pictures[0]);
+                }
+                let url = _svgCache.get(item.key);
+                if (!url) {
+                    url = coverSvgDataUrl(item.key);
+                    _svgCache.set(item.key, url);
+                }
+                return url;
+            }
+
             function updateGridColumns() {
                 const containerWidth = albumGrid.clientWidth;
                 const cols = Math.max(1, Math.floor(containerWidth / Size));
@@ -112,64 +257,37 @@
                 return cols;
             }
 
-            // 渲染网格
+            albumGrid.innerHTML = '';
+
             albumsInfo.forEach((item) => {
                 const el = document.createElement("div");
                 el.classList.add("album-item");
                 el.style.width = Size + "px";
                 el.style.height = Size + "px";
 
-                if (!item.pictures || item.pictures.length === 0) {
-                    const div = document.createElement("div");
-                    div.classList.add("album-text");
-                    div.textContent = item.key.toUpperCase();
-                    div.style.backgroundColor = item.color || "#444";
-                    el.appendChild(div);
-                } else {
-                    const img = document.createElement("img");
-                    const hash = item.pictures[0];
-                    img.src = "data:image/png;base64," + pictureInfo[hash];
-                    el.appendChild(img);
-                }
+                const img = document.createElement("img");
+                img.src = coverUrl(item);
+                img.alt = item.key;
+                img.loading = "lazy";
+                el.appendChild(img);
 
                 albumGrid.appendChild(el);
 
-                // 鼠标悬浮显示预览
-    function showPreview(e) {
-        preview.style.display = "block";
+                function showPreview(e) {
+                    preview.style.display = "block";
+                    preview.innerHTML = `<img src="${coverUrl(item)}" alt="" />`;
 
-        if (!item.pictures || item.pictures.length === 0) {
-            preview.innerHTML = `<div class="preview-text" style="background:${item.color || "#444"}">${item.key}</div>`;
-        } else {
-            const hash = item.pictures[0];
-            preview.innerHTML = `<img src="data:image/png;base64,${pictureInfo[hash]}" />`;
-        }
+                    const rect = el.getBoundingClientRect();
 
-        // 获取 item 相对于视口的位置
-        const rect = el.getBoundingClientRect();
+                    let left = rect.left + rect.width / 2 - PREW / 2;
+                    let top  = rect.top  + rect.height / 2 - PREH / 2;
 
-        // 获取滚动偏移
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+                    preview.style.left = left + "px";
+                    preview.style.top  = top  + "px";
 
-        // 计算 item 中心坐标（页面坐标）
-        let centerX = rect.left + rect.width / 2 + scrollLeft;
-        let centerY = rect.top + rect.height / 2 + scrollTop;
-
-        // 预览框居中显示在 item 中心附近
-        let left = centerX - PREW / 2;
-        let top = centerY - PREH / 2;
-
-        // 可选微调，让预览框稍微偏右下
-        left += 0; // 可以改成 e.offsetX 或其他偏移
-        top += 0;  // 同上
-
-        preview.style.left = left + "px" ;
-        preview.style.top = top  - window.scrollY + "px";
-
-        preview.classList.add("show");
-        preview.classList.remove("hide");
-    }
+                    preview.classList.add("show");
+                    preview.classList.remove("hide");
+                }
 
                 function hidePreview() {
                     preview.classList.remove("show");
@@ -184,9 +302,24 @@
                 el.addEventListener("mouseenter", showPreview);
                 el.addEventListener("mousemove", showPreview);
                 el.addEventListener("mouseleave", hidePreview);
+
+                /* ★ 关键：点击必须走 PJAX，不能直接 location.href 硬跳 */
+                el.addEventListener("click", (e) => {
+                    if (e.defaultPrevented) return;
+                    if (e.button !== 0) return;
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+                    const url = "/Album/Detail?name=" + encodeURIComponent(item.key);
+
+                    if (window.MvPjax && typeof window.MvPjax.navigate === 'function') {
+                        e.preventDefault();
+                        window.MvPjax.navigate(url, true);
+                    } else {
+                        location.href = url;
+                    }
+                });
             });
 
-            // 动态高度
             function updateContainerHeight() {
                 const cols = updateGridColumns();
                 const rows = Math.ceil(albumGrid.children.length / cols);
@@ -199,9 +332,12 @@
 
             let resizeTimer;
             window.addEventListener("resize", () => {
+                if (!document.contains(cardBase)) return;
                 clearTimeout(resizeTimer);
                 resizeTimer = setTimeout(updateContainerHeight, 100);
             });
-        });
+        }
+
+        init();
     })();
 </script>
