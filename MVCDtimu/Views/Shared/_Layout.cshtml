@@ -452,7 +452,205 @@
         }
     </style>
 </head>
-<body>
+    <body>
+
+        <!-- ==================== 全局封面工具 CoverUtil ==================== -->
+        <script>
+            (function () {
+                /* —— 与 WebDtimu.Dependency.TextCoverUtil 视觉同步 —— */
+                const COLORS = [
+                    [49, 91, 37], [31, 78, 64], [39, 67, 105], [54, 75, 94],
+                    [72, 52, 91], [95, 49, 78], [106, 47, 52], [113, 56, 48],
+                    [92, 67, 45], [61, 66, 70], [34, 81, 84], [50, 58, 102],
+                    [76, 85, 42], [82, 60, 53]
+                ];
+
+                const FONT = '"Microsoft YaHei UI","Microsoft YaHei","Segoe UI",Arial,sans-serif';
+                const W = 420, H = 420;
+                const LEFT = 22, BOTTOM = 18;
+                const NAME_MAX_W = 220, NAME_MAX_H = 165;
+                const BIG_FONT = 300;
+
+                let _ctx = null;
+                function ctx() {
+                    if (!_ctx) _ctx = document.createElement('canvas').getContext('2d');
+                    return _ctx;
+                }
+
+                function pickColor(text) {
+                    let h = 2166136261 >>> 0;
+                    for (const ch of (text || '')) {
+                        h ^= ch.codePointAt(0);
+                        h = Math.imul(h, 16777619) >>> 0;
+                    }
+                    const c = COLORS[h % COLORS.length];
+                    return 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+                }
+
+                function firstElement(text) {
+                    text = (text || '').trim();
+                    if (!text) return '?';
+                    if (window.Intl && Intl.Segmenter) {
+                        const seg = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+                        for (const s of seg.segment(text)) return s.segment.toUpperCase();
+                    }
+                    return Array.from(text)[0].toUpperCase();
+                }
+
+                function wrap(c, text, maxW) {
+                    const lines = [];
+                    let cur = '';
+                    for (const ch of text) {
+                        const t = cur + ch;
+                        if (c.measureText(t).width > maxW && cur) {
+                            lines.push(cur);
+                            cur = ch;
+                        } else {
+                            cur = t;
+                        }
+                    }
+                    if (cur) lines.push(cur);
+                    return lines.length ? lines : [''];
+                }
+
+                function esc(s) {
+                    return String(s).replace(/[<>&"']/g, function (ch) {
+                        return ({ '<': '&lt;', '>': '&gt;', '&': '&amp;',
+                                  '"': '&quot;', "'": '&apos;' })[ch];
+                    });
+                }
+
+                function generateCoverSvg(text) {
+                    text = (text || '').trim() || '?';
+                    const c = ctx();
+
+                    const big = firstElement(text);
+                    c.font = 'bold ' + BIG_FONT + 'px ' + FONT;
+                    const bm = c.measureText(big);
+
+                    const bAsc = bm.actualBoundingBoxAscent || BIG_FONT * 0.85;
+                    const bDesc = bm.actualBoundingBoxDescent || BIG_FONT * 0.15;
+                    const bW = bm.width || BIG_FONT;
+                    const bH = bAsc + bDesc;
+
+                    const bigLeft = W - bW * 0.68;
+                    const bigTop  = H - bH * 0.72;
+                    const bigBase = bigTop + bAsc;
+
+                    let fontSize = 25, lines = [text], lineH = 25 * 1.25, lineAsc = 25 * 0.85;
+                    for (let s = 25; s >= 15; s--) {
+                        c.font = s + 'px ' + FONT;
+                        const ln = wrap(c, text, NAME_MAX_W);
+                        const lh = s * 1.25;
+                        if (ln.length * lh <= NAME_MAX_H || s === 15) {
+                            fontSize = s;
+                            lines = ln;
+                            lineH = lh;
+                            const m = c.measureText('中');
+                            lineAsc = m.actualBoundingBoxAscent || s * 0.85;
+                            break;
+                        }
+                    }
+
+                    const blockH   = lines.length * lineH;
+                    const blockTop = H - BOTTOM - blockH;
+
+                    const tspans = lines.map(function (line, i) {
+                        return '<tspan x="' + LEFT + '" y="' + (blockTop + i * lineH + lineAsc).toFixed(2) + '">' + esc(line) + '</tspan>';
+                    }).join('');
+
+                    const bg = pickColor(text);
+
+                    return '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">'
+                        + '<rect width="' + W + '" height="' + H + '" fill="' + bg + '"/>'
+                        + '<text x="' + bigLeft.toFixed(2) + '" y="' + bigBase.toFixed(2) + '" '
+                        + 'font-family=\'' + FONT + '\' font-size="' + BIG_FONT + '" font-weight="bold" fill="#fff">'
+                        + esc(big)
+                        + '</text>'
+                        + '<text font-family=\'' + FONT + '\' font-size="' + fontSize + '" fill="#fff">'
+                        + tspans
+                        + '</text>'
+                        + '</svg>';
+                }
+
+                function coverSvgDataUrl(text) {
+                    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(generateCoverSvg(text));
+                }
+
+                /* 统一封面入口：
+                 *   item = { key?, title?, hash?, pictures?: [], cover? }
+                 *   - 有 pictures → /Cover/{hash}
+                 *   - 有 cover    → 直接用（比如外部已算好）
+                 *   - 否则        → SVG data URL（按 key 缓存）
+                 */
+                const _urlCache = new Map();
+                function coverUrl(item) {
+                    if (!item) return coverSvgDataUrl('?');
+
+                    if (item.pictures && item.pictures.length) {
+                        return '/Cover/' + encodeURIComponent(item.pictures[0]);
+                    }
+                    if (item.cover) return item.cover;
+
+                    const key = item.key || item.title || item.hash || '?';
+                    let url = _urlCache.get(key);
+                    if (!url) {
+                        url = coverSvgDataUrl(key);
+                        _urlCache.set(key, url);
+                    }
+                    return url;
+                }
+
+                        /* ============ hash → 专辑封面 映射（从 AlumbList 反查） ============ */
+        let _hashCoverPromise = null;
+
+        function buildHashToCoverMap() {
+            if (_hashCoverPromise) return _hashCoverPromise;
+
+            _hashCoverPromise = fetch('/api/Lists/AlumbList')
+                .then(function (r) { return r.ok ? r.json() : {}; })
+                .then(function (dict) {
+                    const map = {};
+                    if (!dict || typeof dict !== 'object') return map;
+
+                    Object.keys(dict).forEach(function (albumName) {
+                        const album  = dict[albumName] || {};
+                        const pics   = album.pictures ?? album.Pictures ?? [];
+                        const musics = album.musics   ?? album.Musics   ?? [];
+                        if (!pics.length || !musics.length) return;
+
+                        const cover = '/Cover/' + encodeURIComponent(pics[0]);
+                        for (let i = 0; i < musics.length; i++) {
+                            const h = musics[i];
+                            if (h && !map[h]) map[h] = cover;   // 先遇到的胜出
+                        }
+                    });
+                    return map;
+                })
+                .catch(function (e) {
+                    console.warn('buildHashToCoverMap failed:', e);
+                    _hashCoverPromise = null;   // 允许下次重试
+                    return {};
+                });
+
+            return _hashCoverPromise;
+        }
+
+                window.CoverUtil = {
+                    generateCoverSvg: generateCoverSvg,
+                    coverSvgDataUrl:  coverSvgDataUrl,
+                    coverUrl:         coverUrl,
+                        pickColor:        pickColor,/* ★ 新增 */
+        buildHashToCoverMap: buildHashToCoverMap,
+                    clearCache:       function () { _urlCache.clear(); }
+                };
+
+                /* 兼容老代码 */
+                window.generateCoverSvg = generateCoverSvg;
+                window.coverSvgDataUrl  = coverSvgDataUrl;
+            })();
+        </script>
+        <!-- ==================== CoverUtil END ==================== -->
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -744,6 +942,23 @@
                 emitQueue();
             }
 
+            /* 用新列表整体替换队列，并从 startIndex 开始播 */
+function setQueue(items, startIndex) {
+    if (!Array.isArray(items) || items.length === 0) return;
+
+    queue = items.slice();                       // 复制一份，避免外部数组被后续修改影响
+    index = Math.max(0, Math.min(startIndex | 0, queue.length - 1));
+
+    load(index, true);                            // 你原有的 load(i, autoplay)
+
+    /* 同步通知抽屉重绘 —— 用你原先派发 player:queue 的那段代码，别另起一套 */
+    document.dispatchEvent(new CustomEvent('player:queue', {
+        detail: { queue: queue.slice(), index: index }
+    }));
+}
+
+function playAll(items) { setQueue(items, 0); }
+
             /* ★ 播放或插入
              * - 队列空 / 无当前曲目 → 作为第一首，播放
              * - 已在队列中          → 跳到那一首，播放
@@ -800,7 +1015,9 @@
                 next: function () { if (btnNext) btnNext.click(); },
                 prev: function () { if (btnPrev) btnPrev.click(); },
                 current: function () { return currentItem(); },
-                refresh: function () { updateUI(); }
+                refresh: function () { updateUI(); },
+                        setQueue: setQueue,
+            playAll: playAll
             };
 
             /* ★ 注册 Windows 操作中心（SMTC）的媒体按键，只注册一次 */
@@ -1127,5 +1344,6 @@
         })();
     </script>
     <!-- ==================== PJAX END ==================== -->
+
 </body>
 </html>

@@ -37,6 +37,9 @@ namespace Dtimu.IndexSchemas
         public Dictionary<string, Dtimu.Core.Image> Images { get; set; }
         public Dictionary<string, Collection> Collections { get; set; }
         public Dictionary<string, string> Pictures { get; set; }
+        /// <summary>
+        /// 前一个string是表演者的名字，后一个List<string>是该表演者参与的音乐文件的哈希值列表
+        /// </summary>
         public Dictionary<string, List<string>> Performers { get; set; }
         public DireInfo()
         {

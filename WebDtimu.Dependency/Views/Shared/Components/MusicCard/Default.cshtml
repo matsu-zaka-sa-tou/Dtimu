@@ -84,133 +84,6 @@
 </div>
 
 <script>
-    // —— 与 WebDtimu.Dependency.TextCoverUtil 视觉同步的前端 SVG 封面 ——
-    (function () {
-        const COLORS = [
-            [49, 91, 37], [31, 78, 64], [39, 67, 105], [54, 75, 94],
-            [72, 52, 91], [95, 49, 78], [106, 47, 52], [113, 56, 48],
-            [92, 67, 45], [61, 66, 70], [34, 81, 84], [50, 58, 102],
-            [76, 85, 42], [82, 60, 53]
-        ];
-
-        const FONT = '"Microsoft YaHei UI","Microsoft YaHei","Segoe UI",Arial,sans-serif';
-        const W = 420, H = 420;
-        const LEFT = 22, BOTTOM = 18;
-        const NAME_MAX_W = 220, NAME_MAX_H = 165;
-        const BIG_FONT = 300;
-
-        let _ctx = null;
-        function ctx() {
-            if (!_ctx) _ctx = document.createElement('canvas').getContext('2d');
-            return _ctx;
-        }
-
-        function pickColor(text) {
-            let h = 2166136261 >>> 0;
-            for (const ch of (text || '')) {
-                h ^= ch.codePointAt(0);
-                h = Math.imul(h, 16777619) >>> 0;
-            }
-            const c = COLORS[h % COLORS.length];
-            return `rgb(${c[0]},${c[1]},${c[2]})`;
-        }
-
-        function firstElement(text) {
-            text = (text || '').trim();
-            if (!text) return '?';
-            if (window.Intl && Intl.Segmenter) {
-                const seg = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
-                for (const s of seg.segment(text)) return s.segment.toUpperCase();
-            }
-            return Array.from(text)[0].toUpperCase();
-        }
-
-        function wrap(c, text, maxW) {
-            const lines = [];
-            let cur = '';
-            for (const ch of text) {
-                const t = cur + ch;
-                if (c.measureText(t).width > maxW && cur) {
-                    lines.push(cur);
-                    cur = ch;
-                } else {
-                    cur = t;
-                }
-            }
-            if (cur) lines.push(cur);
-            return lines.length ? lines : [''];
-        }
-
-        function esc(s) {
-            return String(s).replace(/[<>&"']/g, ch => ({
-                '<': '&lt;', '>': '&gt;', '&': '&amp;',
-                '"': '&quot;', "'": '&apos;'
-            }[ch]));
-        }
-
-        function generateCoverSvg(text) {
-            text = (text || '').trim() || '?';
-            const c = ctx();
-
-            const big = firstElement(text);
-            c.font = `bold ${BIG_FONT}px ${FONT}`;
-            const bm = c.measureText(big);
-
-            const bAsc = bm.actualBoundingBoxAscent || BIG_FONT * 0.85;
-            const bDesc = bm.actualBoundingBoxDescent || BIG_FONT * 0.15;
-            const bW = bm.width || BIG_FONT;
-            const bH = bAsc + bDesc;
-
-            const bigLeft = W - bW * 0.68;
-            const bigTop  = H - bH * 0.72;
-            const bigBase = bigTop + bAsc;
-
-            let fontSize = 25, lines = [text], lineH = 25 * 1.25, lineAsc = 25 * 0.85;
-            for (let s = 25; s >= 15; s--) {
-                c.font = `${s}px ${FONT}`;
-                const ln = wrap(c, text, NAME_MAX_W);
-                const lh = s * 1.25;
-                if (ln.length * lh <= NAME_MAX_H || s === 15) {
-                    fontSize = s;
-                    lines = ln;
-                    lineH = lh;
-                    const m = c.measureText('中');
-                    lineAsc = m.actualBoundingBoxAscent || s * 0.85;
-                    break;
-                }
-            }
-
-            const blockH   = lines.length * lineH;
-            const blockTop = H - BOTTOM - blockH;
-
-            const tspans = lines.map((line, i) =>
-                `<tspan x="${LEFT}" y="${(blockTop + i * lineH + lineAsc).toFixed(2)}">${esc(line)}</tspan>`
-            ).join('');
-
-            const bg = pickColor(text);
-
-            return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
-                + `<rect width="${W}" height="${H}" fill="${bg}"/>`
-                + `<text x="${bigLeft.toFixed(2)}" y="${bigBase.toFixed(2)}" `
-                + `font-family='${FONT}' font-size="${BIG_FONT}" font-weight="bold" fill="#fff">`
-                + esc(big)
-                + `</text>`
-                + `<text font-family='${FONT}' font-size="${fontSize}" fill="#fff">`
-                + tspans
-                + `</text>`
-                + `</svg>`;
-        }
-
-        function coverSvgDataUrl(text) {
-            return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(generateCoverSvg(text));
-        }
-
-        window.generateCoverSvg = generateCoverSvg;
-        window.coverSvgDataUrl  = coverSvgDataUrl;
-    })();
-</script>
-
-<script>
     (() => {
         async function init() {
             const cardBase = document.getElementById('@guid');
@@ -222,6 +95,13 @@
             const chrome = cardBase.querySelector('.card-chrome');
             const albumGrid = chrome.querySelector('.album-grid');
             const preview = chrome.querySelector('.preview-box');
+
+            /* ★ 全局封面工具：由 _Layout.cshtml 提供 */
+            if (!window.CoverUtil) {
+                chrome.textContent = '封面工具未加载：请检查 _Layout.cshtml 里的 CoverUtil 脚本';
+                console.error('window.CoverUtil 不存在');
+                return;
+            }
 
             let albumsDict;
             try {
@@ -236,18 +116,9 @@
                 key, ...value
             }));
 
-            const _svgCache = new Map();
-
+            /* ★ 缓存与生成全部交给 CoverUtil */
             function coverUrl(item) {
-                if (item.pictures && item.pictures.length) {
-                    return '/Cover/' + encodeURIComponent(item.pictures[0]);
-                }
-                let url = _svgCache.get(item.key);
-                if (!url) {
-                    url = coverSvgDataUrl(item.key);
-                    _svgCache.set(item.key, url);
-                }
-                return url;
+                return window.CoverUtil.coverUrl(item);
             }
 
             function updateGridColumns() {
