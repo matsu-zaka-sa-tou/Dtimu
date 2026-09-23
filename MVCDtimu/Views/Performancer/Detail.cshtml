@@ -1,7 +1,5 @@
-﻿@*MVCDtimu\Views\Performancer\Detail.cshtml*@
-
-@{
-    ViewData["Title"] = ViewBag.Name ?? "歌手";
+﻿@{
+    ViewData["Title"] = ViewBag.Name;
 }
 
 <style>
@@ -19,10 +17,8 @@
     .track-thumb {
         width: 40px;
         height: 40px;
-        border-radius: 6px;
         object-fit: cover;
-        flex-shrink: 0;
-        background: #f0f0f0;
+        background-color: #f0f0f0;
     }
 </style>
 
@@ -42,19 +38,19 @@
         <h4 class="mb-0 text-truncate" title="@ViewBag.Name">@ViewBag.Name</h4>
     </div>
 
-    <div id="performancer">
+    <div id="album">
         <div class="text-muted small">加载中…</div>
     </div>
 </div>
 
 <script>
     (function () {
-        /* ---------- PJAX 重复执行准备 ---------- */
-        if (window.__performancerCleanup) {
-            try { window.__performancerCleanup(); } catch (e) {}
+        /* ---------- PJAX 清理 ---------- */
+        if (window.__detailCleanup) {
+            try { window.__detailCleanup(); } catch (e) {}
         }
         const _cleanups = [];
-        window.__performancerCleanup = function () {
+        window.__detailCleanup = function () {
             _cleanups.forEach(function (fn) { try { fn(); } catch (e) {} });
             _cleanups.length = 0;
         };
@@ -65,12 +61,10 @@
 
         /* ---------- 基本参数 ---------- */
         const performerName = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.Name));
-
         const MUSIC_BATCH_SIZE = 20;
-
         const MUSIC_API = function (h) { return '/api/Files/Music/' + encodeURIComponent(h); };
 
-        /* ---------- 内联 SVG 图标 ---------- */
+        /* ---------- 图标 ---------- */
         const ICON_PLAY = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
             <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
         </svg>`;
@@ -85,56 +79,48 @@
 
         /* ---------- 状态 ---------- */
         let _queue = [];
+        let _coverMapByHash = {};
         const _btnByHash = new Map();
 
-        /* ★ 关键：把 coverMap 提到 IIFE 作用域，让 buildMusicItem 也能读 */
-        let _coverMapByHash = {};
-
-        /* ---------- 入口 ---------- */
+        /* ---------- 启动 ---------- */
         init();
         on(document, 'player:change', onPlayerChange);
 
         async function init() {
-            const root = document.getElementById('performancer');
+            const root = document.getElementById('album');
             if (!root) return;
-
-            if (!performerName) {
-                root.innerHTML = '<div class="alert alert-warning mb-0">未指定歌手名</div>';
-                return;
-            }
-
             try {
+                /* 1) 拿当前歌手的 hash 列表 */
                 const resp = await fetch('/api/performancers?name=' + encodeURIComponent(performerName));
                 if (!resp.ok) {
                     root.innerHTML = '<div class="alert alert-danger mb-0">加载失败：HTTP ' + resp.status + '</div>';
                     return;
                 }
-                const data = await resp.json();
-                const hashes = Array.isArray(data) ? data : [];
-
-                let musicMap = {};
-                if (hashes.length) {
-                    try {
-                        musicMap = await fetchMusicMap(hashes);
-                    } catch (e) {
-                        console.warn('曲目元数据加载失败，退化为哈希显示：', e);
-                    }
+                const hashes = await resp.json();
+                if (!Array.isArray(hashes) || hashes.length === 0) {
+                    root.innerHTML = '<div class="alert alert-warning mb-0">该歌手暂无可播放曲目</div>';
+                    return;
                 }
 
-                /* ★ 从 AlumbList 反查 hash → 专辑封面 */
-                let coverMap = {};
+                /* 2) 批量拿元数据 */
+                let musicMap = {};
+                try {
+                    musicMap = await fetchMusicMap(hashes);
+                } catch (e) {
+                    console.warn('曲目元数据加载失败，退化为哈希显示：', e);
+                }
+
+                /* 3) 拿 hash → 专辑封面 映射 */
                 if (window.CoverUtil && typeof window.CoverUtil.buildHashToCoverMap === 'function') {
                     try {
-                        coverMap = await window.CoverUtil.buildHashToCoverMap();
+                        _coverMapByHash = await window.CoverUtil.buildHashToCoverMap();
                     } catch (e) {
                         console.warn('封面映射加载失败：', e);
+                        _coverMapByHash = {};
                     }
                 }
 
-                /* ★ 赋值到作用域外层的变量 */
-                _coverMapByHash = coverMap || {};
-
-                render(root, hashes, musicMap, _coverMapByHash);
+                render(root, hashes, musicMap);
             } catch (e) {
                 root.innerHTML = '<div class="alert alert-danger mb-0">加载失败：' + escapeHtml(e.message) + '</div>';
             }
@@ -169,18 +155,19 @@
             });
         }
 
-        /* ================= 渲染 ================= */
-        function render(root, hashes, musicMap, coverMap) {
+        function render(root, hashes, musicMap) {
             _queue = hashes.map(function (hash) {
                 const m = musicMap ? musicMap[hash] : null;
                 const t = m ? (m.Title      ?? m.title      ?? '') : '';
                 const p = m ? (m.Performers ?? m.performers ?? []) : [];
+                const cover = _coverMapByHash[hash]
+                    || (window.CoverUtil ? window.CoverUtil.coverUrl({ hash: hash, title: t }) : '');
                 return {
-                    hash:  hash,
-                    url:   MUSIC_API(hash),
-                    title: t || (hash.slice(0, 16) + '…'),
+                    hash:   hash,
+                    url:    MUSIC_API(hash),
+                    title:  t || (hash.slice(0, 16) + '…'),
                     artist: Array.isArray(p) ? p.join(' / ') : '',
-                    cover: (coverMap && coverMap[hash]) || null
+                    cover:  cover
                 };
             });
             _btnByHash.clear();
@@ -196,7 +183,7 @@
             btnPlayAll.innerHTML = ICON_PLAY + '<span>播放全部</span>';
             on(btnPlayAll, 'click', function () {
                 if (!window.MvPlayer || typeof window.MvPlayer.playAll !== 'function') {
-                    console.warn('MvPlayer.playAll 不可用，请检查 Layout 里的播放器脚本');
+                    console.warn('MvPlayer.playAll 不可用');
                     return;
                 }
                 window.MvPlayer.playAll(_queue);
@@ -205,15 +192,12 @@
 
             sec.appendChild(sectionHeader('单曲 (' + hashes.length + ')', actions));
 
-            if (hashes.length === 0) {
-                sec.appendChild(emptyHint('暂无歌曲'));
-            } else {
-                const list = el('div', 'list-group');
-                hashes.forEach(function (hash, i) {
-                    list.appendChild(buildMusicItem(hash, i, musicMap));
-                });
-                sec.appendChild(list);
-            }
+            const list = el('div', 'list-group');
+            hashes.forEach(function (hash, i) {
+                list.appendChild(buildMusicItem(hash, i, musicMap));
+            });
+            sec.appendChild(list);
+
             root.appendChild(sec);
 
             if (window.MvPlayer && typeof window.MvPlayer.refresh === 'function') {
@@ -228,6 +212,9 @@
             const performers = m ? (m.Performers ?? m.performers ?? []) : [];
             const fileName   = m ? (m.FileName   ?? m.fileName   ?? '') : '';
 
+            const coverUrl = _coverMapByHash[hash]
+                || (window.CoverUtil ? window.CoverUtil.coverUrl({ hash: hash, title: title }) : '');
+
             const item = el('div', 'list-group-item d-flex align-items-start gap-3 py-3');
 
             const idx = el('span', 'text-muted small font-monospace flex-shrink-0 pt-1');
@@ -235,15 +222,10 @@
             idx.textContent = String(i + 1).padStart(2, '0');
             item.appendChild(idx);
 
-            /* ★ 曲目行小封面：从 _coverMapByHash 取 */
-            const thumbUrl = _coverMapByHash ? _coverMapByHash[hash] : null;
-            if (thumbUrl) {
-                const thumb = el('img', 'track-thumb');
-                thumb.src = thumbUrl;
-                thumb.loading = 'lazy';
-                thumb.alt = '';
-                item.appendChild(thumb);
-            }
+            const thumb = el('img', 'track-thumb flex-shrink-0 rounded border');
+            thumb.src = coverUrl;
+            thumb.alt = '';
+            item.appendChild(thumb);
 
             const info = el('div', 'flex-grow-1');
             info.style.minWidth = '0';
@@ -268,6 +250,17 @@
                     b.href = '/Performancer/Detail?name=' + encodeURIComponent(p);
                     b.title = '查看 ' + p + ' 的全部歌曲';
                     b.textContent = p;
+
+                    /* ★ 新增：点击当前歌手自己的徽章，不导航，滚动到顶部 */
+                    if (p === performerName) {
+                        b.setAttribute('data-no-pjax', 'true'); // 告诉全局 PJAX 不要拦截
+                        b.title = '返回顶部'; // 更新悬浮提示
+                        on(b, 'click', function (e) {
+                            e.preventDefault(); // 阻止默认导航
+                            window.scrollTo({ top: 0, behavior: 'smooth' }); // 平滑滚动到顶部
+                        });
+                    }
+
                     perfWrap.appendChild(b);
                 });
                 subParts.push(perfWrap);
@@ -321,7 +314,7 @@
 
         function playAt(i) {
             if (!window.MvPlayer || typeof window.MvPlayer.playOrInsert !== 'function') {
-                console.warn('MvPlayer.playOrInsert 不可用，请检查 Layout 中的播放器脚本版本');
+                console.warn('MvPlayer.playOrInsert 不可用');
                 return;
             }
             const item = _queue[i];
@@ -331,7 +324,7 @@
 
         function playNextAt(i) {
             if (!window.MvPlayer || typeof window.MvPlayer.playNext !== 'function') {
-                console.warn('MvPlayer.playNext 不可用，请检查 Layout 中的播放器脚本版本');
+                console.warn('MvPlayer.playNext 不可用');
                 return;
             }
             const item = _queue[i];
@@ -354,19 +347,6 @@
             wrap.appendChild(h);
             if (actions) wrap.appendChild(actions);
             return wrap;
-        }
-
-        function sectionTitle(text) {
-            const h = el('h6', 'text-uppercase text-muted small fw-semibold mb-3');
-            h.style.letterSpacing = '.08em';
-            h.textContent = text;
-            return h;
-        }
-
-        function emptyHint(text) {
-            const d = el('div', 'text-muted small fst-italic');
-            d.textContent = text;
-            return d;
         }
 
         function escapeHtml(s) {

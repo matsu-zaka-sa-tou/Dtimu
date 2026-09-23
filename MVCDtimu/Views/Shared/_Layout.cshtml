@@ -807,13 +807,15 @@
                 const it = currentItem();
                 if (titleEl)  titleEl.textContent  = it ? it.title  : '歌曲名称';
                 if (artistEl) artistEl.textContent = it ? (it.artist || '') : '歌手';
-                if (coverEl) {
-                    if (it && it.cover) {
-                        coverEl.style.backgroundImage = 'url("' + String(it.cover).replace(/"/g, '\\"') + '")';
-                    } else {
-                        coverEl.style.backgroundImage = '';
-                    }
-                }
+                        if (coverEl) {
+            if (it && window.CoverUtil) {
+                // 交给 CoverUtil 统一处理：有真实封面用真实的，没有则按 title/hash 生成 SVG
+                const coverUrl = window.CoverUtil.coverUrl(it);
+                coverEl.style.backgroundImage = coverUrl ? 'url("' + String(coverUrl).replace(/"/g, '\\"') + '")' : '';
+            } else {
+                coverEl.style.backgroundImage = '';
+            }
+        }
                 if (btnPlay) btnPlay.textContent = audio.paused ? '▶' : '⏸';
 
                 /* ★ 同步到 Windows 操作中心（内部已做去重） */
@@ -1112,11 +1114,14 @@ function playAll(items) { setQueue(items, 0); }
                     idx.className = 'playlist-item-idx';
                     idx.textContent = String(i + 1).padStart(2, '0');
 
-                    const cover = document.createElement('div');
-                    cover.className = 'playlist-item-cover';
-                    if (item.cover) {
-                        cover.style.backgroundImage = 'url("' + String(item.cover).replace(/"/g, '\\"') + '")';
-                    }
+        const cover = document.createElement('div');
+        cover.className = 'playlist-item-cover';
+        if (window.CoverUtil) {
+            const coverUrl = window.CoverUtil.coverUrl(item);
+            cover.style.backgroundImage = coverUrl ? 'url("' + String(coverUrl).replace(/"/g, '\\"') + '")' : '';
+        } else if (item.cover) {
+            cover.style.backgroundImage = 'url("' + String(item.cover).replace(/"/g, '\\"') + '")';
+        }
 
                     const meta = document.createElement('div');
                     meta.className = 'playlist-item-meta';

@@ -38,7 +38,7 @@
 
 <script>
     (function () {
-        /* ---------- 为 PJAX 重复执行准备：清理上一次的监听器 ---------- */
+        /* ---------- PJAX 清理 ---------- */
         if (window.__detailCleanup) {
             try { window.__detailCleanup(); } catch (e) {}
         }
@@ -54,13 +54,10 @@
 
         /* ---------- 基本参数 ---------- */
         const albumName = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.Name));
-
         const MUSIC_BATCH_SIZE = 20;
-
-        /* ★ 实际路由是 Files 控制器，前缀 /api/Files */
         const MUSIC_API = function (h) { return '/api/Files/Music/' + encodeURIComponent(h); };
 
-        /* ---------- 内联 SVG 图标 ---------- */
+        /* ---------- 图标 ---------- */
         const ICON_PLAY = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
             <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
         </svg>`;
@@ -69,16 +66,15 @@
             <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5"/>
         </svg>`;
 
-        /* ★ 新增：下一首播放图标（列表 + 加号） */
         const ICON_NEXT = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M2.5 3.5a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zM12.5 7a.5.5 0 0 1 .5.5V10h2.5a.5.5 0 0 1 0 1H13v2.5a.5.5 0 0 1-1 0V11H9.5a.5.5 0 0 1 0-1H12V7.5a.5.5 0 0 1 .5-.5z"/>
-    </svg>`;
+            <path d="M2.5 3.5a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zM12.5 7a.5.5 0 0 1 .5.5V10h2.5a.5.5 0 0 1 0 1H13v2.5a.5.5 0 0 1-1 0V11H9.5a.5.5 0 0 1 0-1H12V7.5a.5.5 0 0 1 .5-.5z"/>
+        </svg>`;
 
         /* ---------- 状态 ---------- */
         let _queue = [];
         const _btnByHash = new Map();
 
-        /* ---------- 入口：直接执行 ---------- */
+        /* ---------- 入口 ---------- */
         init();
         on(document, 'player:change', onPlayerChange);
 
@@ -144,18 +140,21 @@
             const pictures   = data.pictures        ?? data.Pictures        ?? [];
             const musics     = data.musics          ?? data.Musics          ?? [];
 
-            const albumCover = pictures[0] ? ('/Cover/' + encodeURIComponent(pictures[0])) : null;
+            /* 计算专辑封面：优先真实图片，没有则用 CoverUtil 生成 SVG 兜底 */
+            const albumCover = pictures[0]
+                ? ('/Cover/' + encodeURIComponent(pictures[0]))
+                : (window.CoverUtil ? window.CoverUtil.coverUrl({ title: albumName }) : '');
 
             _queue = musics.map(function (hash) {
                 const m = musicMap ? musicMap[hash] : null;
                 const t = m ? (m.Title      ?? m.title      ?? '') : '';
                 const p = m ? (m.Performers ?? m.performers ?? []) : [];
                 return {
-                    hash:  hash,
-                    url:   MUSIC_API(hash),
-                    title: t || (hash.slice(0, 16) + '…'),
+                    hash:   hash,
+                    url:    MUSIC_API(hash),
+                    title:  t || (hash.slice(0, 16) + '…'),
                     artist: Array.isArray(p) ? p.join(' / ') : '',
-                    cover: albumCover
+                    cover:  albumCover
                 };
             });
             _btnByHash.clear();
@@ -185,10 +184,23 @@
             {
                 const sec = el('section', 'mb-4');
                 sec.appendChild(sectionTitle('图片 (' + pictures.length + ')'));
+
+                const row = el('div', 'row g-2');
+
                 if (pictures.length === 0) {
-                    sec.appendChild(emptyHint('暂无图片'));
+                    /* ★ 没有真实图片时，显示生成的 SVG 封面 */
+                    const col = el('div', 'col-6 col-sm-4 col-md-3');
+                    const a = el('a', 'd-block ratio ratio-1x1 rounded-3 overflow-hidden border bg-light');
+                    a.href = albumCover;
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    const img = el('img', 'w-100 h-100 object-fit-cover');
+                    img.src = albumCover;
+                    img.alt = '';
+                    a.appendChild(img);
+                    col.appendChild(a);
+                    row.appendChild(col);
                 } else {
-                    const row = el('div', 'row g-2');
                     pictures.forEach(function (hash) {
                         const col = el('div', 'col-6 col-sm-4 col-md-3');
                         const a = el('a', 'd-block ratio ratio-1x1 rounded-3 overflow-hidden border bg-light');
@@ -203,8 +215,9 @@
                         col.appendChild(a);
                         row.appendChild(col);
                     });
-                    sec.appendChild(row);
                 }
+
+                sec.appendChild(row);
                 root.appendChild(sec);
             }
 
@@ -252,12 +265,23 @@
             const performers = m ? (m.Performers ?? m.performers ?? []) : [];
             const fileName   = m ? (m.FileName   ?? m.fileName   ?? '') : '';
 
+            const coverUrl = (_queue[i] && _queue[i].cover)
+                || (window.CoverUtil ? window.CoverUtil.coverUrl({ hash: hash, title: title }) : '');
+
             const item = el('div', 'list-group-item d-flex align-items-start gap-3 py-3');
 
             const idx = el('span', 'text-muted small font-monospace flex-shrink-0 pt-1');
             idx.style.minWidth = '2.5em';
             idx.textContent = String(i + 1).padStart(2, '0');
             item.appendChild(idx);
+
+            const thumb = el('img', 'track-thumb flex-shrink-0 rounded border');
+            thumb.src = coverUrl;
+            thumb.style.width = '40px';
+            thumb.style.height = '40px';
+            thumb.style.objectFit = 'cover';
+            thumb.alt = '';
+            item.appendChild(thumb);
 
             const info = el('div', 'flex-grow-1');
             info.style.minWidth = '0';
@@ -305,7 +329,6 @@
 
             item.appendChild(info);
 
-            /* ★ 两个操作按钮：下一首播放 + 播放 */
             const actions = el('div', 'd-flex gap-1 flex-shrink-0');
 
             const btnNextUp = el('button', 'btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center');
@@ -344,7 +367,6 @@
             window.MvPlayer.playOrInsert(item);
         }
 
-        /* ★ 把第 i 首插到"正在播放"的下一首位置 */
         function playNextAt(i) {
             if (!window.MvPlayer || typeof window.MvPlayer.playNext !== 'function') {
                 console.warn('MvPlayer.playNext 不可用，请检查 Layout 中的播放器脚本版本');

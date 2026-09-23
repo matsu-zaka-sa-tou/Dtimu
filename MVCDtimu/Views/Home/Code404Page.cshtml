@@ -10,5 +10,28 @@
 
     <p>请检查您输入的地址是否正确，或者返回首页继续浏览。</p>
 
-    <a class="btn btn-primary" href="/">返回首页</a>
+    <!-- ★ 加上 data-pjax 属性，明确标识此链接走 PJAX 导航 -->
+    <a class="btn btn-primary" href="/" data-pjax>返回首页</a>
 </div>
+
+<script>
+    (function () {
+        /* ---------- PJAX 清理（如果之前有绑定过监听器） ---------- */
+        if (window.__detailCleanup) {
+            try { window.__detailCleanup(); } catch (e) {}
+        }
+
+        /* ---------- 为 404 页面的按钮显式绑定 PJAX 导航 ---------- */
+        const btn = document.querySelector('a[data-pjax]');
+        if (btn) {
+            btn.addEventListener('click', function (e) {
+                // 如果全局 MvPjax 存在，则使用 PJAX 导航
+                if (window.MvPjax && typeof window.MvPjax.navigate === 'function') {
+                    e.preventDefault(); // 阻止默认的整页刷新
+                    window.MvPjax.navigate('/', true); // 第二个参数 true 表示 pushState 更新历史记录
+                }
+                // 否则，不阻止默认行为，让浏览器执行标准的整页跳转（兜底策略）
+            });
+        }
+    })();
+</script>
