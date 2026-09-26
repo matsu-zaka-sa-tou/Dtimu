@@ -25,7 +25,7 @@
                         </TextBlock>
                     </Grid>
                     <ctrl:ServerEntrance Title="此设备 (未完成)" Tag="ths_dev"/>
-                    <ctrl:ServerEntrancePanel x:ConnectionId='3' x:Name="SEP">
+                    <ctrl:ServerEntrancePanel x:ConnectionId='3' x:Name="SEP" >
                         
                     </ctrl:ServerEntrancePanel>
                 </StackPanel>

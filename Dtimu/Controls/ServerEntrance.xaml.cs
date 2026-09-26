@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -57,15 +58,25 @@ namespace Dtimu.Controls
             }
             else
             {
-                var instance = DataContext as Models.ServerInstance;
+                
+            }
+            var instance = DataContext as Models.ServerInstance;
+            try
+            {
+
                 instance.RefreshList();
                 GlobalConfigs.CurrentServerInstance = instance;
+                np = typeof(ServerNavigatePage);
+                MainPage.CFM.Navigate(np,
+                    null, new
+                    DrillInNavigationTransitionInfo());
             }
-            np = typeof(ServerNavigatePage);
+            catch (Exception ex)
+            {
 
-            MainPage.CFM.Navigate(np,
-                null, new
-                DrillInNavigationTransitionInfo());
+                var dialog = new MessageDialog($"无法连接到服务器{instance.IPAddress}, 详情：{ex.Message}");
+                dialog.ShowAsync();
+            }
         }
     }
 }

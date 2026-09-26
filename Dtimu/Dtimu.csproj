@@ -107,6 +107,9 @@
     <Compile Include="Controls\Marquee.xaml.cs">
       <DependentUpon>Marquee.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\MySlider.xaml.cs">
+      <DependentUpon>MySlider.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\RecentItem.xaml.cs">
       <DependentUpon>RecentItem.xaml</DependentUpon>
     </Compile>
@@ -124,8 +127,7 @@
     <Compile Include="Models\RecentItemPair.cs" />
     <Compile Include="Models\GlobalConfigs.cs" />
     <Compile Include="Models\ServerInstance.cs" />
-    <Compile Include="Utils\BroadCastDiscover.cs" />
-    <Compile Include="Utils\IPUtil.cs" />
+    <Compile Include="Utils\RemoteUtil.cs" />
     <Compile Include="ViewModels\NavigateViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\HomePage.xaml.cs">
@@ -176,6 +178,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="Controls\Marquee.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\MySlider.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

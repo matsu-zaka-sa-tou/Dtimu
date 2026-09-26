@@ -406,6 +406,9 @@
     <AppxPackagedFile Include="C:\Users\User\source\repos\Dtimu\Dtimu\bin\ARM\Debug\Controls\Marquee.xbf">
       <PackagePath>Controls\Marquee.xbf</PackagePath>
     </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\User\source\repos\Dtimu\Dtimu\bin\ARM\Debug\Controls\MySlider.xbf">
+      <PackagePath>Controls\MySlider.xbf</PackagePath>
+    </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\User\source\repos\Dtimu\Dtimu\bin\ARM\Debug\Controls\RecentItem.xbf">
       <PackagePath>Controls\RecentItem.xbf</PackagePath>
     </AppxPackagedFile>

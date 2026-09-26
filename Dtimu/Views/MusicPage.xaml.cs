@@ -1,8 +1,10 @@
 ﻿using Dtimu.Models;
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Storage.Streams;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -78,7 +80,26 @@ namespace Dtimu.Views
                 DataContext = music;
                 if (GlobalConfigs.CurrentServerInstance.DireInfo.Pictures.ContainsKey(music.Pictrue))
                 {
-                    SetImageFromBase64(GlobalConfigs.CurrentServerInstance.DireInfo.Pictures[music.Pictrue]);
+                    var b64 = GlobalConfigs.CurrentServerInstance.DireInfo.Pictures[music.Pictrue];
+                    if (!string.IsNullOrWhiteSpace(b64))
+                    {
+                        AlumbCover.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                        SetImageFromBase64(b64);
+                    }
+                    else
+                    {
+
+                        AlumbCover.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                        FirstLetterBD.Background = new SolidColorBrush(Colors.DarkBlue);
+                        var album = GlobalConfigs.CurrentServerInstance.DireInfo.Albums.ToList().Where(x=>x.Value.Musics.Contains(hash)).FirstOrDefault();
+                        FirstLetterBDTB.Text = album.Key;
+                    }
+                }
+                else
+                {
+                    AlumbCover.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                    FirstLetterBD.Background = new SolidColorBrush(Colors.DarkBlue);
+                    FirstLetterBDTB.Text = music.Title.Substring(0, 1).ToUpper();
                 }
             }
             else if(GlobalConfigs.CurrentServerInstance.DireInfo.Videos.ContainsKey(hash))
@@ -99,6 +120,25 @@ namespace Dtimu.Views
             else if (stateName == "Wide")
             {
 
+            }
+        }
+
+        private void MySlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (mediaPlayer.CurrentState == MediaElementState.Playing)
+            {
+                // 检查视频时长是否可用
+                if (mediaPlayer.NaturalDuration.HasTimeSpan)
+                {
+                    // Slider 值假设是 0~1
+                    double progress = e.NewValue;
+
+                    // 计算目标时间
+                    TimeSpan targetTime = TimeSpan.FromSeconds(mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds * progress);
+
+                    // 通过 Position 设置进度
+                    mediaPlayer.Position = targetTime;
+                }
             }
         }
     }

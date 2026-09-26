@@ -11,8 +11,8 @@
     <AuthenticationMode>Windows</AuthenticationMode>
     <RemoteDebugEnabled>false</RemoteDebugEnabled>
     <UseSimulator>false</UseSimulator>
-    <DeviceId>362F2FFC-8775-4C87-A784-13CE2DCF05C4</DeviceId>
-    <UseEmulator>false</UseEmulator>
+    <DeviceId>30F105C9-681E-420b-A277-7C086EAD8A4E</DeviceId>
+    <UseEmulator>true</UseEmulator>
     <DeployOptionalPackages>false</DeployOptionalPackages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">

@@ -551,9 +551,13 @@ C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\MultipleQualifiersPerDimens
 C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\resources.en-us.resfiles
 C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\resources.en-us.resfiles.intermediate
 C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\ProjectArchitectures.txt
-C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\Dtimu.csprojAssemblyReference.cache
 C:\Users\User\source\repos\Dtimu\Dtimu\bin\ARM\Debug\Controls\Marquee.xbf
 C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\Controls\Marquee.g.i.cs
 C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\Controls\Marquee.g.cs
 C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\Controls\Marquee.xaml
 C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\Controls\Marquee.xbf
+C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\Controls\MySlider.g.i.cs
+C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\Controls\MySlider.g.cs
+C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\Controls\MySlider.xaml
+C:\Users\User\source\repos\Dtimu\Dtimu\obj\ARM\Debug\Controls\MySlider.xbf
+C:\Users\User\source\repos\Dtimu\Dtimu\bin\ARM\Debug\Controls\MySlider.xbf

@@ -559,3 +559,8 @@ C:\Users\User\source\repos\Dtimu\Dtimu\obj\x86\Debug\Controls\Marquee.g.i.cs
 C:\Users\User\source\repos\Dtimu\Dtimu\obj\x86\Debug\Controls\Marquee.g.cs
 C:\Users\User\source\repos\Dtimu\Dtimu\obj\x86\Debug\Controls\Marquee.xaml
 C:\Users\User\source\repos\Dtimu\Dtimu\obj\x86\Debug\Controls\Marquee.xbf
+C:\Users\User\source\repos\Dtimu\Dtimu\obj\x86\Debug\Controls\MySlider.g.i.cs
+C:\Users\User\source\repos\Dtimu\Dtimu\obj\x86\Debug\Controls\MySlider.g.cs
+C:\Users\User\source\repos\Dtimu\Dtimu\obj\x86\Debug\Controls\MySlider.xaml
+C:\Users\User\source\repos\Dtimu\Dtimu\obj\x86\Debug\Controls\MySlider.xbf
+C:\Users\User\source\repos\Dtimu\Dtimu\bin\x86\Debug\Controls\MySlider.xbf

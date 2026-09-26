@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dtimu"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:conv="using:Dtimu.BindingConvertors"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:ctrl="using:Dtimu.Controls"
     mc:Ignorable="d">
     <Page.Resources>
         <conv:PerformancerConvertor x:Key="PC"/>
@@ -39,6 +39,13 @@
         </VisualStateManager.VisualStateGroups>
         <StackPanel VerticalAlignment="Center" Width="350" x:Name="MusicInfo_Area">
             <Grid Width="300" Height="300">
+                <Border Name="FirstLetterBD">
+                    <TextBlock Name="FirstLetterBDTB" 
+                               Foreground="White" 
+                               Margin="40,40,0,0"
+                               FontSize="36" FontWeight="Bold" 
+                               TextWrapping="Wrap"/>
+                </Border>
                 <Image x:Name="AlumbCover" />
                 <MediaElement x:Name="mediaPlayer" 
                           AreTransportControlsEnabled="False">
@@ -47,8 +54,8 @@
             </Grid>
             <TextBlock Text="{Binding Title}" FontSize="28" FontWeight="Bold" Margin="0,30,0,0"/>
             <TextBlock Text="{Binding Performers,Converter={StaticResource PC}}"/>
-            <Slider Name="SeekController"/>
-            
+
+            <ctrl:MySlider ValueChanged="MySlider_ValueChanged"/>
 
         </StackPanel>
         

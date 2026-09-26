@@ -132,43 +132,49 @@ namespace Dtimu.Dtimu_XamlTypeInfo
 
         private void InitTypeTables()
         {
-            _typeNameTable = new string[17];
-            _typeNameTable[0] = "Dtimu.Controls.RecentItem";
+            _typeNameTable = new string[20];
+            _typeNameTable[0] = "Dtimu.Controls.Marquee";
             _typeNameTable[1] = "Windows.UI.Xaml.Controls.UserControl";
             _typeNameTable[2] = "String";
-            _typeNameTable[3] = "Dtimu.Controls.RecentItemPanel";
-            _typeNameTable[4] = "System.Collections.Generic.IEnumerable`1<Dtimu.Models.RecentItemPair>";
-            _typeNameTable[5] = "Dtimu.Controls.ServerEntrance";
-            _typeNameTable[6] = "Dtimu.Controls.ServerEntrancePanel";
-            _typeNameTable[7] = "System.Collections.Generic.IEnumerable`1<Dtimu.Models.ServerInstance>";
-            _typeNameTable[8] = "Dtimu.Views.HomePage";
-            _typeNameTable[9] = "Windows.UI.Xaml.Controls.Page";
-            _typeNameTable[10] = "Dtimu.Views.MainPage";
-            _typeNameTable[11] = "Dtimu.Views.MusicListView";
-            _typeNameTable[12] = "Dtimu.Views.MusicPage";
-            _typeNameTable[13] = "Dtimu.Views.PicturePage";
-            _typeNameTable[14] = "Dtimu.Views.ServerNavigatePage";
-            _typeNameTable[15] = "Dtimu.Views.SettingsPage";
-            _typeNameTable[16] = "Dtimu.Views.VideoPage";
+            _typeNameTable[3] = "Dtimu.Controls.RecentItem";
+            _typeNameTable[4] = "Dtimu.Controls.RecentItemPanel";
+            _typeNameTable[5] = "System.Collections.Generic.IEnumerable`1<Dtimu.Models.RecentItemPair>";
+            _typeNameTable[6] = "Dtimu.Controls.ServerEntrance";
+            _typeNameTable[7] = "Dtimu.Controls.ServerEntrancePanel";
+            _typeNameTable[8] = "System.Collections.Generic.IEnumerable`1<Dtimu.Models.ServerInstance>";
+            _typeNameTable[9] = "Dtimu.Views.HomePage";
+            _typeNameTable[10] = "Windows.UI.Xaml.Controls.Page";
+            _typeNameTable[11] = "Dtimu.Views.MainPage";
+            _typeNameTable[12] = "Dtimu.Views.MusicListView";
+            _typeNameTable[13] = "Dtimu.Models.ServerInstance";
+            _typeNameTable[14] = "Object";
+            _typeNameTable[15] = "Dtimu.Views.MusicPage";
+            _typeNameTable[16] = "Dtimu.Views.PicturePage";
+            _typeNameTable[17] = "Dtimu.Views.ServerNavigatePage";
+            _typeNameTable[18] = "Dtimu.Views.SettingsPage";
+            _typeNameTable[19] = "Dtimu.Views.VideoPage";
 
-            _typeTable = new global::System.Type[17];
-            _typeTable[0] = typeof(global::Dtimu.Controls.RecentItem);
+            _typeTable = new global::System.Type[20];
+            _typeTable[0] = typeof(global::Dtimu.Controls.Marquee);
             _typeTable[1] = typeof(global::Windows.UI.Xaml.Controls.UserControl);
             _typeTable[2] = typeof(global::System.String);
-            _typeTable[3] = typeof(global::Dtimu.Controls.RecentItemPanel);
-            _typeTable[4] = typeof(global::System.Collections.Generic.IEnumerable<global::Dtimu.Models.RecentItemPair>);
-            _typeTable[5] = typeof(global::Dtimu.Controls.ServerEntrance);
-            _typeTable[6] = typeof(global::Dtimu.Controls.ServerEntrancePanel);
-            _typeTable[7] = typeof(global::System.Collections.Generic.IEnumerable<global::Dtimu.Models.ServerInstance>);
-            _typeTable[8] = typeof(global::Dtimu.Views.HomePage);
-            _typeTable[9] = typeof(global::Windows.UI.Xaml.Controls.Page);
-            _typeTable[10] = typeof(global::Dtimu.Views.MainPage);
-            _typeTable[11] = typeof(global::Dtimu.Views.MusicListView);
-            _typeTable[12] = typeof(global::Dtimu.Views.MusicPage);
-            _typeTable[13] = typeof(global::Dtimu.Views.PicturePage);
-            _typeTable[14] = typeof(global::Dtimu.Views.ServerNavigatePage);
-            _typeTable[15] = typeof(global::Dtimu.Views.SettingsPage);
-            _typeTable[16] = typeof(global::Dtimu.Views.VideoPage);
+            _typeTable[3] = typeof(global::Dtimu.Controls.RecentItem);
+            _typeTable[4] = typeof(global::Dtimu.Controls.RecentItemPanel);
+            _typeTable[5] = typeof(global::System.Collections.Generic.IEnumerable<global::Dtimu.Models.RecentItemPair>);
+            _typeTable[6] = typeof(global::Dtimu.Controls.ServerEntrance);
+            _typeTable[7] = typeof(global::Dtimu.Controls.ServerEntrancePanel);
+            _typeTable[8] = typeof(global::System.Collections.Generic.IEnumerable<global::Dtimu.Models.ServerInstance>);
+            _typeTable[9] = typeof(global::Dtimu.Views.HomePage);
+            _typeTable[10] = typeof(global::Windows.UI.Xaml.Controls.Page);
+            _typeTable[11] = typeof(global::Dtimu.Views.MainPage);
+            _typeTable[12] = typeof(global::Dtimu.Views.MusicListView);
+            _typeTable[13] = typeof(global::Dtimu.Models.ServerInstance);
+            _typeTable[14] = typeof(global::System.Object);
+            _typeTable[15] = typeof(global::Dtimu.Views.MusicPage);
+            _typeTable[16] = typeof(global::Dtimu.Views.PicturePage);
+            _typeTable[17] = typeof(global::Dtimu.Views.ServerNavigatePage);
+            _typeTable[18] = typeof(global::Dtimu.Views.SettingsPage);
+            _typeTable[19] = typeof(global::Dtimu.Views.VideoPage);
         }
 
         private int LookupTypeIndexByName(string typeName)
@@ -203,18 +209,20 @@ namespace Dtimu.Dtimu_XamlTypeInfo
             return -1;
         }
 
-        private object Activate_0_RecentItem() { return new global::Dtimu.Controls.RecentItem(); }
-        private object Activate_3_RecentItemPanel() { return new global::Dtimu.Controls.RecentItemPanel(); }
-        private object Activate_5_ServerEntrance() { return new global::Dtimu.Controls.ServerEntrance(); }
-        private object Activate_6_ServerEntrancePanel() { return new global::Dtimu.Controls.ServerEntrancePanel(); }
-        private object Activate_8_HomePage() { return new global::Dtimu.Views.HomePage(); }
-        private object Activate_10_MainPage() { return new global::Dtimu.Views.MainPage(); }
-        private object Activate_11_MusicListView() { return new global::Dtimu.Views.MusicListView(); }
-        private object Activate_12_MusicPage() { return new global::Dtimu.Views.MusicPage(); }
-        private object Activate_13_PicturePage() { return new global::Dtimu.Views.PicturePage(); }
-        private object Activate_14_ServerNavigatePage() { return new global::Dtimu.Views.ServerNavigatePage(); }
-        private object Activate_15_SettingsPage() { return new global::Dtimu.Views.SettingsPage(); }
-        private object Activate_16_VideoPage() { return new global::Dtimu.Views.VideoPage(); }
+        private object Activate_0_Marquee() { return new global::Dtimu.Controls.Marquee(); }
+        private object Activate_3_RecentItem() { return new global::Dtimu.Controls.RecentItem(); }
+        private object Activate_4_RecentItemPanel() { return new global::Dtimu.Controls.RecentItemPanel(); }
+        private object Activate_6_ServerEntrance() { return new global::Dtimu.Controls.ServerEntrance(); }
+        private object Activate_7_ServerEntrancePanel() { return new global::Dtimu.Controls.ServerEntrancePanel(); }
+        private object Activate_9_HomePage() { return new global::Dtimu.Views.HomePage(); }
+        private object Activate_11_MainPage() { return new global::Dtimu.Views.MainPage(); }
+        private object Activate_12_MusicListView() { return new global::Dtimu.Views.MusicListView(); }
+        private object Activate_13_ServerInstance() { return new global::Dtimu.Models.ServerInstance(); }
+        private object Activate_15_MusicPage() { return new global::Dtimu.Views.MusicPage(); }
+        private object Activate_16_PicturePage() { return new global::Dtimu.Views.PicturePage(); }
+        private object Activate_17_ServerNavigatePage() { return new global::Dtimu.Views.ServerNavigatePage(); }
+        private object Activate_18_SettingsPage() { return new global::Dtimu.Views.SettingsPage(); }
+        private object Activate_19_VideoPage() { return new global::Dtimu.Views.VideoPage(); }
 
         private global::Windows.UI.Xaml.Markup.IXamlType CreateXamlType(int typeIndex)
         {
@@ -226,10 +234,10 @@ namespace Dtimu.Dtimu_XamlTypeInfo
             switch (typeIndex)
             {
 
-            case 0:   //  Dtimu.Controls.RecentItem
+            case 0:   //  Dtimu.Controls.Marquee
                 userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_0_RecentItem;
-                userType.AddMemberName("Title");
+                userType.Activator = Activate_0_Marquee;
+                userType.AddMemberName("Text");
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -242,98 +250,118 @@ namespace Dtimu.Dtimu_XamlTypeInfo
                 xamlType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 3:   //  Dtimu.Controls.RecentItemPanel
+            case 3:   //  Dtimu.Controls.RecentItem
                 userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_3_RecentItemPanel;
-                userType.AddMemberName("RecentItems");
-                userType.SetIsLocalType();
-                xamlType = userType;
-                break;
-
-            case 4:   //  System.Collections.Generic.IEnumerable`1<Dtimu.Models.RecentItemPair>
-                userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.SetIsReturnTypeStub();
-                xamlType = userType;
-                break;
-
-            case 5:   //  Dtimu.Controls.ServerEntrance
-                userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_5_ServerEntrance;
+                userType.Activator = Activate_3_RecentItem;
                 userType.AddMemberName("Title");
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 6:   //  Dtimu.Controls.ServerEntrancePanel
+            case 4:   //  Dtimu.Controls.RecentItemPanel
                 userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_6_ServerEntrancePanel;
-                userType.AddMemberName("ServerInstances");
+                userType.Activator = Activate_4_RecentItemPanel;
+                userType.AddMemberName("RecentItems");
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 7:   //  System.Collections.Generic.IEnumerable`1<Dtimu.Models.ServerInstance>
+            case 5:   //  System.Collections.Generic.IEnumerable`1<Dtimu.Models.RecentItemPair>
                 userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, null);
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 8:   //  Dtimu.Views.HomePage
-                userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_8_HomePage;
+            case 6:   //  Dtimu.Controls.ServerEntrance
+                userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
+                userType.Activator = Activate_6_ServerEntrance;
+                userType.AddMemberName("Title");
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 9:   //  Windows.UI.Xaml.Controls.Page
+            case 7:   //  Dtimu.Controls.ServerEntrancePanel
+                userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
+                userType.Activator = Activate_7_ServerEntrancePanel;
+                userType.AddMemberName("ServerInstances");
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 8:   //  System.Collections.Generic.IEnumerable`1<Dtimu.Models.ServerInstance>
+                userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, null);
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 9:   //  Dtimu.Views.HomePage
+                userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
+                userType.Activator = Activate_9_HomePage;
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 10:   //  Windows.UI.Xaml.Controls.Page
                 xamlType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 10:   //  Dtimu.Views.MainPage
+            case 11:   //  Dtimu.Views.MainPage
                 userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_10_MainPage;
+                userType.Activator = Activate_11_MainPage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 11:   //  Dtimu.Views.MusicListView
+            case 12:   //  Dtimu.Views.MusicListView
                 userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_11_MusicListView;
+                userType.Activator = Activate_12_MusicListView;
+                userType.AddMemberName("ServerInstance");
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 12:   //  Dtimu.Views.MusicPage
-                userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_12_MusicPage;
+            case 13:   //  Dtimu.Models.ServerInstance
+                userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                userType.SetIsReturnTypeStub();
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 13:   //  Dtimu.Views.PicturePage
+            case 14:   //  Object
+                xamlType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 15:   //  Dtimu.Views.MusicPage
                 userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_13_PicturePage;
+                userType.Activator = Activate_15_MusicPage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 14:   //  Dtimu.Views.ServerNavigatePage
+            case 16:   //  Dtimu.Views.PicturePage
                 userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_14_ServerNavigatePage;
+                userType.Activator = Activate_16_PicturePage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 15:   //  Dtimu.Views.SettingsPage
+            case 17:   //  Dtimu.Views.ServerNavigatePage
                 userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_15_SettingsPage;
+                userType.Activator = Activate_17_ServerNavigatePage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 16:   //  Dtimu.Views.VideoPage
+            case 18:   //  Dtimu.Views.SettingsPage
                 userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_16_VideoPage;
+                userType.Activator = Activate_18_SettingsPage;
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 19:   //  Dtimu.Views.VideoPage
+                userType = new global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
+                userType.Activator = Activate_19_VideoPage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -342,45 +370,65 @@ namespace Dtimu.Dtimu_XamlTypeInfo
         }
 
 
-        private object get_0_RecentItem_Title(object instance)
+        private object get_0_Marquee_Text(object instance)
+        {
+            var that = (global::Dtimu.Controls.Marquee)instance;
+            return that.Text;
+        }
+        private void set_0_Marquee_Text(object instance, object Value)
+        {
+            var that = (global::Dtimu.Controls.Marquee)instance;
+            that.Text = (global::System.String)Value;
+        }
+        private object get_1_RecentItem_Title(object instance)
         {
             var that = (global::Dtimu.Controls.RecentItem)instance;
             return that.Title;
         }
-        private void set_0_RecentItem_Title(object instance, object Value)
+        private void set_1_RecentItem_Title(object instance, object Value)
         {
             var that = (global::Dtimu.Controls.RecentItem)instance;
             that.Title = (global::System.String)Value;
         }
-        private object get_1_RecentItemPanel_RecentItems(object instance)
+        private object get_2_RecentItemPanel_RecentItems(object instance)
         {
             var that = (global::Dtimu.Controls.RecentItemPanel)instance;
             return that.RecentItems;
         }
-        private void set_1_RecentItemPanel_RecentItems(object instance, object Value)
+        private void set_2_RecentItemPanel_RecentItems(object instance, object Value)
         {
             var that = (global::Dtimu.Controls.RecentItemPanel)instance;
             that.RecentItems = (global::System.Collections.Generic.IEnumerable<global::Dtimu.Models.RecentItemPair>)Value;
         }
-        private object get_2_ServerEntrance_Title(object instance)
+        private object get_3_ServerEntrance_Title(object instance)
         {
             var that = (global::Dtimu.Controls.ServerEntrance)instance;
             return that.Title;
         }
-        private void set_2_ServerEntrance_Title(object instance, object Value)
+        private void set_3_ServerEntrance_Title(object instance, object Value)
         {
             var that = (global::Dtimu.Controls.ServerEntrance)instance;
             that.Title = (global::System.String)Value;
         }
-        private object get_3_ServerEntrancePanel_ServerInstances(object instance)
+        private object get_4_ServerEntrancePanel_ServerInstances(object instance)
         {
             var that = (global::Dtimu.Controls.ServerEntrancePanel)instance;
             return that.ServerInstances;
         }
-        private void set_3_ServerEntrancePanel_ServerInstances(object instance, object Value)
+        private void set_4_ServerEntrancePanel_ServerInstances(object instance, object Value)
         {
             var that = (global::Dtimu.Controls.ServerEntrancePanel)instance;
             that.ServerInstances = (global::System.Collections.Generic.IEnumerable<global::Dtimu.Models.ServerInstance>)Value;
+        }
+        private object get_5_MusicListView_ServerInstance(object instance)
+        {
+            var that = (global::Dtimu.Views.MusicListView)instance;
+            return that.ServerInstance;
+        }
+        private void set_5_MusicListView_ServerInstance(object instance, object Value)
+        {
+            var that = (global::Dtimu.Views.MusicListView)instance;
+            that.ServerInstance = (global::Dtimu.Models.ServerInstance)Value;
         }
 
         private global::Windows.UI.Xaml.Markup.IXamlMember CreateXamlMember(string longMemberName)
@@ -390,33 +438,46 @@ namespace Dtimu.Dtimu_XamlTypeInfo
 
             switch (longMemberName)
             {
+            case "Dtimu.Controls.Marquee.Text":
+                userType = (global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Dtimu.Controls.Marquee");
+                xamlMember = new global::Dtimu.Dtimu_XamlTypeInfo.XamlMember(this, "Text", "String");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_0_Marquee_Text;
+                xamlMember.Setter = set_0_Marquee_Text;
+                break;
             case "Dtimu.Controls.RecentItem.Title":
                 userType = (global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Dtimu.Controls.RecentItem");
                 xamlMember = new global::Dtimu.Dtimu_XamlTypeInfo.XamlMember(this, "Title", "String");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_0_RecentItem_Title;
-                xamlMember.Setter = set_0_RecentItem_Title;
+                xamlMember.Getter = get_1_RecentItem_Title;
+                xamlMember.Setter = set_1_RecentItem_Title;
                 break;
             case "Dtimu.Controls.RecentItemPanel.RecentItems":
                 userType = (global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Dtimu.Controls.RecentItemPanel");
                 xamlMember = new global::Dtimu.Dtimu_XamlTypeInfo.XamlMember(this, "RecentItems", "System.Collections.Generic.IEnumerable`1<Dtimu.Models.RecentItemPair>");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_1_RecentItemPanel_RecentItems;
-                xamlMember.Setter = set_1_RecentItemPanel_RecentItems;
+                xamlMember.Getter = get_2_RecentItemPanel_RecentItems;
+                xamlMember.Setter = set_2_RecentItemPanel_RecentItems;
                 break;
             case "Dtimu.Controls.ServerEntrance.Title":
                 userType = (global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Dtimu.Controls.ServerEntrance");
                 xamlMember = new global::Dtimu.Dtimu_XamlTypeInfo.XamlMember(this, "Title", "String");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_2_ServerEntrance_Title;
-                xamlMember.Setter = set_2_ServerEntrance_Title;
+                xamlMember.Getter = get_3_ServerEntrance_Title;
+                xamlMember.Setter = set_3_ServerEntrance_Title;
                 break;
             case "Dtimu.Controls.ServerEntrancePanel.ServerInstances":
                 userType = (global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Dtimu.Controls.ServerEntrancePanel");
                 xamlMember = new global::Dtimu.Dtimu_XamlTypeInfo.XamlMember(this, "ServerInstances", "System.Collections.Generic.IEnumerable`1<Dtimu.Models.ServerInstance>");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_3_ServerEntrancePanel_ServerInstances;
-                xamlMember.Setter = set_3_ServerEntrancePanel_ServerInstances;
+                xamlMember.Getter = get_4_ServerEntrancePanel_ServerInstances;
+                xamlMember.Setter = set_4_ServerEntrancePanel_ServerInstances;
+                break;
+            case "Dtimu.Views.MusicListView.ServerInstance":
+                userType = (global::Dtimu.Dtimu_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Dtimu.Views.MusicListView");
+                xamlMember = new global::Dtimu.Dtimu_XamlTypeInfo.XamlMember(this, "ServerInstance", "Dtimu.Models.ServerInstance");
+                xamlMember.Getter = get_5_MusicListView_ServerInstance;
+                xamlMember.Setter = set_5_MusicListView_ServerInstance;
                 break;
             }
             return xamlMember;
