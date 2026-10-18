@@ -9,6 +9,7 @@
     <Import_RootNamespace>SharedDtimu</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AppId431960IndexUtil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FileInstance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GZipUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Image.cs" />

@@ -974,7 +974,7 @@ namespace Dtimu.IndexSchemas
             Thread.Sleep(1000);
         }
 
-        private static double GetVideoDuration(string ffmpegPath, string inputVideo)
+        public static double GetVideoDuration(string ffmpegPath, string inputVideo)
         {
             string arguments = $"-hwaccel auto -i \"{inputVideo}\"";
             Process process = new Process
@@ -1115,8 +1115,15 @@ namespace Dtimu.IndexSchemas
                         var file = TagLib.File.Create(item.FullName);
                         var nt = Path.GetFileNameWithoutExtension(item.FullName);
                         file.Tag.Title = file.Tag.Title ?? nt;
-                        file.Save();
-                        Console.WriteLine($"标题已修改为：{nt}");
+                        try
+                        {
+                            file.Save();
+                            Console.WriteLine($"标题已修改为：{nt}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("保存标题失败，可能是因为标题已存在，或者文件有版权保护。");
+                        }
                     }
                     else
                     {

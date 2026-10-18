@@ -1,78 +1,128 @@
 ﻿@* WebDtimu.Dependency\Views\Shared\Components\VedioCard\ *@
 
 @{
-    var guid = Guid.NewGuid().ToString();
+    var guid = Guid.NewGuid().ToString("N"); 
+    
+    // UI 尺寸控制
+    bool isSquareMode = ViewData["AppId431960Mode"] as bool? ?? false;
+    // 数据源控制：从 ViewData 读取 IsBurned，默认为 true (走 Base64)
+    bool isBurned = ViewData["IsBurned"] as bool? ?? true; 
+    
+    int itemWidth  = 160;
+    int gap        = 20;
+    int imgHeight  = isSquareMode ? 160 : 90;
 }
 <style>
-    .card-combined-base {
+    .card-base-@guid {
         position: relative;
         padding-top: 40px;
         margin-bottom: 40px;
     }
 
-    .video-grid {
+    .video-grid-@guid {
         display: grid;
         grid-template-columns: repeat(auto-fill, 160px);
-        grid-auto-rows: 90px;
         gap: 20px;
     }
 
-    .video-card-content img {
+    .video-card-content-@guid {
         width: 160px;
-        height: 90px;
-        transition: 0.1s ease;
-        cursor: pointer;
+        overflow: hidden; 
+        background-color: #f0f0f0; 
+    }
+
+    .video-card-content-@guid img {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 160px !important; 
+        object-fit: cover; 
         display: block;
+        cursor: pointer;
+        transition: 0.1s ease;
     }
 </style>
 
-<div class="card-combined-base" id="@guid">
+<div class="card-base-@guid" id="@guid">
     <div class="card-chrome">
         <h6 class="card-title">视频</h6>
-        <div class="video-grid" style="margin-top:40px;margin-left:20px">
+        <div class="video-grid-@guid" 
+             style="grid-auto-rows: @(imgHeight)px; margin-top: 40px; margin-left: 20px;">
         </div>
     </div>
 </div>
 
 <script>
     (() => {
-        /* ---------- 初始化函数：首屏 / PJAX 后都执行 ---------- */
+        const ITEM_WIDTH  = 160;
+        const ITEM_HEIGHT = @(imgHeight);
+        const GAP         = 20;
+        const IS_BURNED   = @(isBurned.ToString().ToLower());
+
         async function init() {
             const cardBase = document.getElementById('@guid');
-            if (!cardBase) return;   // 已经被替换掉了，跳过
-            const grid = cardBase.querySelector(".video-grid");
+            if (!cardBase) return;
+            const grid = cardBase.querySelector(".video-grid-@guid");
             const chrome = cardBase.querySelector(".card-chrome");
 
             try {
                 const response = await fetch("/api/Lists/VideoList");
                 if (!response.ok) throw new Error("请求失败");
-                const videos = await response.json();
+                const videosDict = await response.json();
 
                 grid.innerHTML = "";
 
-                videos.forEach(video => {
-                    if (!video.gallery || video.gallery.length === 0) return;
+                // 【修改点】：遍历字典，entries 会返回 [key, value] 的数组
+                Object.entries(videosDict).forEach(([videoId, video]) => {
+                    const sources = [];
+
+                    if (!IS_BURNED) {
+                        // 【模式 A】：IsBurned 为 false，直接使用字典的 Key (videoId) 请求 API
+                        if (videoId) {
+                            sources.push(`/api/AppId431960Mode?id=${encodeURIComponent(videoId)}`);
+                        }
+                    } else {
+                        // 【模式 B】：IsBurned 为 true，使用原有的 Base64 Gallery
+                        if (video.gallery && video.gallery.length > 0) {
+                            video.gallery.forEach(b64 => sources.push("data:image/png;base64," + b64));
+                        }
+                    }
+
+                    if (sources.length === 0) {
+                        sources.push("/images/default-cover.png"); 
+                    }
 
                     const div = document.createElement("div");
-                    div.className = "video-card-content";
+                    div.className = "video-card-content-@guid";
 
                     const img = document.createElement("img");
                     let currentIndex = 0;
-                    img.src = "data:image/png;base64," + video.gallery[currentIndex];
+                    
+                    img.src = sources[currentIndex];
                     img.alt = video.title || "视频";
 
+                    img.onerror = () => {
+                        img.onerror = null; 
+                        img.src = "/images/default-cover.png"; 
+                    };
+
+                    // img.onclick = () => {
+                    //     if (!video.filePath) return;
+                    //     window.location.href = "/files/" + video.filePath.replace(/\\/g, "/");
+                    // };
+
+                    // 改成：
                     img.onclick = () => {
-                        if (!video.filePath) return;
-                        window.location.href = "/files/" + video.filePath.replace(/\\/g, "/");
+                        window.location.href = "/Video/Detail/" + encodeURIComponent(videoId);
                     };
 
                     let lastX = null;
                     img.addEventListener("mousemove", (e) => {
                         if (lastX === null) { lastX = e.offsetX; return; }
                         const deltaX = e.offsetX - lastX;
-                        if (Math.abs(deltaX) >= 16) {
-                            currentIndex = (currentIndex + (deltaX > 0 ? 1 : -1) + video.gallery.length) % video.gallery.length;
-                            img.src = "data:image/png;base64," + video.gallery[currentIndex];
+                        
+                        if (Math.abs(deltaX) >= 16 && sources.length > 1) {
+                            currentIndex = (currentIndex + (deltaX > 0 ? 1 : -1) + sources.length) % sources.length;
+                            img.src = sources[currentIndex];
                             lastX = e.offsetX;
                         }
                     });
@@ -83,17 +133,24 @@
                 });
 
                 function updateContainerHeight() {
-                    const rows = Math.ceil(grid.children.length / Math.floor(grid.clientWidth / 160));
-                    const itemHeight = 90;
-                    const gap = 20;
-                    const outres = rows * itemHeight + (rows) * gap + 60;
+                    const count = grid.children.length;
+                    if (count === 0) {
+                        cardBase.style.height = "auto";
+                        chrome.style.height = "auto";
+                        return;
+                    }
+
+                    const cols = Math.max(1, Math.floor((grid.clientWidth + GAP) / (ITEM_WIDTH + GAP)));
+                    const rows = Math.ceil(count / cols);
+                    const gridHeight = rows * ITEM_HEIGHT + (rows - 1) * GAP;
+                    const outres = gridHeight + 140; 
+                    
                     cardBase.style.height = outres + "px";
                     chrome.style.height = outres + "px";
                 }
 
                 updateContainerHeight();
 
-                /* resize 防抖：只在当前 cardBase 还在文档里时才更新 */
                 let resizeTimer;
                 window.addEventListener("resize", () => {
                     if (!document.contains(cardBase)) return;
@@ -107,7 +164,6 @@
             }
         }
 
-        /* ---------- 入口：首屏走 DOMContentLoaded，PJAX 后立即执行 ---------- */
         init();
     })();
 </script>

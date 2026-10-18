@@ -9,8 +9,12 @@ namespace WebDtimu.Dependency.Components
 {
     public class VideoCardViewComponent : ViewComponent
     {
-        public IViewComponentResult Invoke()
+        // 根据你的需求定义参数，例如 AppId 和 Mode
+        public IViewComponentResult Invoke(bool appId431960Mode = false,bool isBurned = true)
         {
+            // 可以将参数存入 ViewData 或直接传递给 View 模型
+            ViewData["AppId431960Mode"] = appId431960Mode;
+            ViewData["IsBurned"] = isBurned;
             return View();
         }
     }

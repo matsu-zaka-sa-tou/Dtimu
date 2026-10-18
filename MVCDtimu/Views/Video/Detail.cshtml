@@ -1,0 +1,259 @@
+﻿@* MVCDtimu\Views\Video\Detail.cshtml *@
+
+@{
+    var videoId = ViewData["VideoId"] as string ?? "";
+    bool isBurned = ViewData["IsBurned"] as bool? ?? true;
+}
+
+<div class="container-xl py-3"
+     id="video-root"
+     data-video-id="@videoId"
+     data-is-burned="@isBurned.ToString().ToLower()">
+
+    <div class="row g-4">
+
+        @* ============ 左侧：播放器 ============ *@
+        <div class="col-12 col-lg-9">
+            <div class="ratio ratio-16x9 bg-black rounded overflow-hidden shadow-sm">
+                <video id="player" controls playsinline preload="metadata"></video>
+            </div>
+
+            <h1 class="h5 mt-3 mb-2" id="video-title">加载中…</h1>
+            <div class="text-secondary small mb-2" id="video-meta"></div>
+            <p class="text-secondary small mb-0" id="video-desc"></p>
+        </div>
+
+        @* ============ 右侧：相关推荐 ============ *@
+        <div class="col-12 col-lg-3">
+            <h6 class="mb-3">相关推荐</h6>
+            <div id="related-list" class="d-flex flex-column gap-3">
+                <div class="text-secondary small">加载中…</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .related-item {
+        color: inherit;
+    }
+
+        .related-item:hover .related-title {
+            color: #00a1d6;
+        }
+
+    .related-thumb {
+        width: 140px;
+        flex: 0 0 140px;
+        aspect-ratio: 16 / 9;
+        border-radius: .5rem;
+        overflow: hidden;
+        background-color: #e9ecef;
+    }
+
+        .related-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+    .related-title {
+        font-size: .875rem;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    @@media (max-width: 575.98px) {
+        .related-thumb {
+            width: 120px;
+            flex: 0 0 120px;
+        }
+    }
+</style>
+
+<script>
+    (() => {
+        const root = document.getElementById('video-root');
+        const player = document.getElementById('player');
+        const titleEl = document.getElementById('video-title');
+        const metaEl = document.getElementById('video-meta');
+        const descEl = document.getElementById('video-desc');
+        const relatedEl = document.getElementById('related-list');
+
+        const INITIAL_ID = root.dataset.videoId || "";
+        const IS_BURNED = root.dataset.isBurned === "true";
+
+        // 最后一道兜底：内联 SVG，保证任何情况下都不出现破图标
+        const FALLBACK_SVG = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90">' +
+            '<rect width="100%" height="100%" fill="#e9ecef"/>' +
+            '<text x="50%" y="50%" fill="#adb5bd" font-size="12" text-anchor="middle" dy=".3em">暂无封面</text>' +
+            '</svg>');
+
+        /* =========================================================
+           封面候选源 —— 与 VideoCard 同款逻辑：
+           1) IS_BURNED 决定优先顺序；
+           2) 另一路作为兜底也放进候选队列；
+           3) 最后追加 SVG 占位。
+           ========================================================= */
+        function coverSources(id, video) {
+            // gallery 元素如果已带 data: 前缀就不要重复加
+            const b64 = (video.gallery || []).map(b =>
+                b.startsWith("data:") ? b : "data:image/png;base64," + b);
+
+            const api = id
+                ? [`/api/AppId431960Mode?id=${encodeURIComponent(id)}`]
+                : [];
+
+            return IS_BURNED
+                ? [...b64, ...api, FALLBACK_SVG]
+                : [...api, ...b64, FALLBACK_SVG];
+        }
+
+        // 给 img 绑定多源自动 fallback
+        function applySources(img, sources) {
+            let i = 0;
+            img.onerror = () => {
+                if (++i < sources.length) {
+                    img.src = sources[i];
+                } else {
+                    img.onerror = null;   // 全部挂掉就停止，避免死循环
+                }
+            };
+            img.src = sources[0];
+        }
+
+        function videoUrlOf(video) {
+            if (!video || !video.filePath) return null;
+            return "/files/" + encodeURI(video.filePath.replace(/\\/g, "/"));
+        }
+
+        /* =========================================================
+           相关推荐：取字典中当前视频"附近"的条目，前后交替环形展开
+           例：索引 5，返回 4、6、3、7、2、8 …
+           ========================================================= */
+        function nearbyEntries(entries, idx, n) {
+            if (n <= 1 || idx < 0) return [];
+            const seen = new Set([entries[idx][0]]);
+            const out = [];
+            for (let k = 1; out.length < n - 1 && k <= n; k++) {
+                for (const j of [idx - k, idx + k]) {
+                    const pos = ((j % n) + n) % n;
+                    const [id, video] = entries[pos];
+                    if (seen.has(id)) continue;
+                    seen.add(id);
+                    out.push([id, video]);
+                    if (out.length >= n - 1) break;
+                }
+            }
+            return out;
+        }
+
+        async function init() {
+            let dict;
+            try {
+                const res = await fetch("/api/Lists/VideoList");
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                dict = await res.json();
+            } catch (e) {
+                titleEl.textContent = "加载视频列表失败";
+                metaEl.textContent = e.message;
+                return;
+            }
+
+            const entries = Object.entries(dict || {});
+            if (entries.length === 0) {
+                titleEl.textContent = "暂无视频";
+                relatedEl.innerHTML = '<div class="text-secondary small">暂无视频</div>';
+                return;
+            }
+
+            // 选片：URL 里的 id 优先；找不到就回退到第一个
+            let currentId = INITIAL_ID;
+            let current = dict[currentId];
+            if (!current) {
+                currentId = entries[0][0];
+                current = entries[0][1];
+            }
+
+            // 把真实播放的 id 写回地址栏，刷新/分享才不会错位
+            const expectedPath = "/Video/Detail/" + encodeURIComponent(currentId);
+            if (location.pathname !== expectedPath) {
+                history.replaceState(null, "", expectedPath);
+            }
+
+            // ---------- 播放器 ----------
+            document.title = (current.title || "视频") + " - 视频播放";
+            titleEl.textContent = current.title || "未命名视频";
+            descEl.textContent = current.description || "";
+
+            const ext = (current.filePath || "").split(".").pop().toUpperCase();
+            metaEl.textContent = ext ? ext + " · 本地视频" : "本地视频";
+
+            const src = videoUrlOf(current);
+            if (src) {
+                player.src = src;
+                player.poster = coverSources(currentId, current)[0];
+                player.addEventListener("error", () => {
+                    metaEl.innerHTML = '<span class="text-danger">视频加载失败，请检查 /files 下文件是否存在</span>';
+                });
+            } else {
+                metaEl.innerHTML = '<span class="text-danger">该视频没有可用的文件路径</span>';
+            }
+
+            // ---------- 相关推荐（附近几条，而不是固定的"其余全部"） ----------
+            relatedEl.innerHTML = "";
+
+            const idx = entries.findIndex(([id]) => id === currentId);
+            const ordered = nearbyEntries(entries, idx, entries.length);
+            const MAX_RELATED = 6;
+            const related = ordered.slice(0, MAX_RELATED);
+
+            if (related.length === 0) {
+                relatedEl.innerHTML = '<div class="text-secondary small">没有其他视频</div>';
+                return;
+            }
+
+            related.forEach(([id, video]) => {
+                const a = document.createElement("a");
+                a.href = "/Video/Detail/" + encodeURIComponent(id);
+                a.className = "related-item d-flex gap-2 text-decoration-none";
+
+                const thumb = document.createElement("div");
+                thumb.className = "related-thumb";
+
+                const img = document.createElement("img");
+                img.alt = video.title || "视频封面";
+                img.loading = "lazy";
+                applySources(img, coverSources(id, video));   // 多源兜底
+                thumb.appendChild(img);
+
+                const info = document.createElement("div");
+                info.className = "flex-grow-1 overflow-hidden";
+
+                const t = document.createElement("div");
+                t.className = "related-title";
+                t.textContent = video.title || "未命名视频";
+
+                const m = document.createElement("div");
+                m.className = "text-secondary small mt-1";
+                m.textContent = video.description
+                    ? video.description.slice(0, 24)
+                    : "视频";
+
+                info.appendChild(t);
+                info.appendChild(m);
+
+                a.appendChild(thumb);
+                a.appendChild(info);
+                relatedEl.appendChild(a);
+            });
+        }
+
+        init();
+    })();
+</script>

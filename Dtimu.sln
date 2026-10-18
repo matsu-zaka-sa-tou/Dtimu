@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.8.34322.80
+# Visual Studio Version 18
+VisualStudioVersion = 18.10.12217.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscViewer", "DiscViewer\DiscViewer.csproj", "{D6A79FD9-8D2F-4DAF-ACA2-6B4098C259CF}"
 EndProject
@@ -60,6 +60,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DiscGen", "DiscGen", "{CC89C3F1-309F-46CE-9BDC-2E1AF9D0162E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dtimu.BroadCastForwarder", "Dtimu.BroadCastForwarder\Dtimu.BroadCastForwarder.csproj", "{D79518BA-C818-4CE0-9A3E-19472A834444}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dtimu.OnlineDecoder", "Dtimu.OnlineDecoder\Dtimu.OnlineDecoder.csproj", "{88D07951-053F-4788-BDB1-9D5583369F62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoblieDtimu", "MoblieDtimu\MoblieDtimu.csproj", "{AD183E21-47D8-45C0-922E-2EC069630158}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTestProj", "NUnitTestProj\NUnitTestProj.csproj", "{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -348,6 +354,43 @@ Global
 		{D79518BA-C818-4CE0-9A3E-19472A834444}.Release|x64.Build.0 = Release|Any CPU
 		{D79518BA-C818-4CE0-9A3E-19472A834444}.Release|x86.ActiveCfg = Release|Any CPU
 		{D79518BA-C818-4CE0-9A3E-19472A834444}.Release|x86.Build.0 = Release|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Debug|x64.Build.0 = Debug|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Debug|x86.Build.0 = Debug|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Release|x64.ActiveCfg = Release|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Release|x64.Build.0 = Release|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Release|x86.ActiveCfg = Release|Any CPU
+		{88D07951-053F-4788-BDB1-9D5583369F62}.Release|x86.Build.0 = Release|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Debug|x64.Build.0 = Debug|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Debug|x86.Build.0 = Debug|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Release|x64.ActiveCfg = Release|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Release|x64.Build.0 = Release|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Release|x86.ActiveCfg = Release|Any CPU
+		{AD183E21-47D8-45C0-922E-2EC069630158}.Release|x86.Build.0 = Release|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Debug|x64.Build.0 = Debug|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Debug|x86.Build.0 = Debug|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Release|x64.ActiveCfg = Release|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Release|x64.Build.0 = Release|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Release|x86.ActiveCfg = Release|Any CPU
+		{003E0DDE-62F8-401E-A6CD-29DC549F1DCE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -373,11 +416,13 @@ Global
 		{A9CCF793-4069-0E34-1851-26CD6D59D08A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{887A540F-A68D-4EB4-9D72-207DDDC90D42} = {9ED1F442-7A3C-4131-A29D-61B292650088}
 		{D79518BA-C818-4CE0-9A3E-19472A834444} = {9ED1F442-7A3C-4131-A29D-61B292650088}
+		{AD183E21-47D8-45C0-922E-2EC069630158} = {00F7FD84-F98C-40E3-A9BD-C5BC5EFCDEBB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7F30C737-8453-4A1C-9D79-D0A663779505}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		SharedDtimu\SharedDtimu.projitems*{3a201300-ff87-420c-8eab-9251c45636ca}*SharedItemsImports = 4
 		SharedDtimu\SharedDtimu.projitems*{5d101d6d-dc6c-441c-b876-1bcb0009a776}*SharedItemsImports = 5
 		SharedDtimu\SharedDtimu.projitems*{e399dd93-2228-4921-84f4-54fce2993df0}*SharedItemsImports = 13
 	EndGlobalSection

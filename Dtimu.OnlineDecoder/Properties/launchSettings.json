@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://0.0.0.0:8090",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DTIMU_MEDIA_ROOT": "/var/media",
+        "DTIMU_INSECURE_TLS": "1",
+        "DTIMU_SCRATCH_ROOT": "/dev/shm/dtimu",
+        "DTIMU_REMOTE_MODE": "stream",
+        "DTIMU_IDLE_DELETE_MIN": "15"
+      }
+    }
+  }
+}

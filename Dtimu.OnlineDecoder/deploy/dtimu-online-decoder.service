@@ -1,0 +1,29 @@
+[Unit]
+Description=Dtimu OnlineDecoder (VAAPI HLS 转码服务)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 按实际部署目录与媒体目录修改
+WorkingDirectory=/opt/dtimu-decoder
+Environment=DTIMU_MEDIA_ROOT=/var/media
+Environment=DTIMU_URLS=http://0.0.0.0:8090
+Environment=DTIMU_QP=16
+Environment=DTIMU_INSECURE_TLS=1
+# 零磁盘模式：产物写内存 tmpfs + 远程源流式直连（零落盘）+ 看完 15 分钟自动删
+Environment=DTIMU_SCRATCH_ROOT=/dev/shm/dtimu
+Environment=DTIMU_REMOTE_MODE=stream
+Environment=DTIMU_IDLE_DELETE_MIN=15
+# UHD630 VAAPI 环境（systemd 不继承 /etc/profile.d 的变量，必须显式给）
+Environment=LIBVA_DRIVER_NAME=iHD
+Environment=LIBVA_DRM_DEVICE=/dev/dri/renderD128
+ExecStart=/opt/dtimu-decoder/Dtimu.OnlineDecoder
+Restart=on-failure
+RestartSec=5
+# 输出进 journalctl
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

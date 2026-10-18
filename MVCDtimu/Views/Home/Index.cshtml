@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var appId431960Mode = Program.AppId431960Mode;
 }
 
 <style>
@@ -29,6 +30,6 @@
         
     </div>
 
-    <vc:video-card></vc:video-card>
+    <vc:video-card app-id431960-mode="appId431960Mode" is-burned="Program.IsBurned"></vc:video-card>
     <vc:music-card></vc:music-card>
 </body>

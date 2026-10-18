@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="MoblieDtimu.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:MoblieDtimu"
+    Title="MoblieDtimu"
+    Shell.TabBarBackgroundColor="#1A1A1A"
+    Shell.TabBarForegroundColor="#FF9800"
+    Shell.TabBarUnselectedColor="#888888"
+    Shell.TabBarTitleColor="#FFFFFF">
+
+    <TabBar>
+        
+    </TabBar>
+</Shell>

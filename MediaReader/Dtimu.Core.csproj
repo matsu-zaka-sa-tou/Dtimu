@@ -61,15 +61,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GZipUtils.cs" />
-    <Compile Include="FileInstance.cs" />
-    <Compile Include="Image.cs" />
-    <Compile Include="Util.cs" />
-    <Compile Include="MusicFileInfo.cs" />
-    <Compile Include="IndexSchema.cs" />
-    <Compile Include="MyRandomGen.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Video.cs" />
   </ItemGroup>
+  <Import Project="..\SharedDtimu\SharedDtimu.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

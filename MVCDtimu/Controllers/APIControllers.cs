@@ -38,9 +38,9 @@ namespace MVCDtimu.Controllers
         }
         
         [HttpGet("VideoList")]
-        public IEnumerable<Video> VideoList()
+        public Dictionary<string, Video> VideoList()
         {
-            return Program.DireInfo.Videos.Values.ToArray();
+            return Program.DireInfo.Videos;
         }
 
         [HttpGet("AlumbList")]
