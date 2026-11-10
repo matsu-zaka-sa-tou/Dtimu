@@ -3,167 +3,330 @@
 @{
     var guid = Guid.NewGuid().ToString("N"); 
     
-    // UI 尺寸控制
     bool isSquareMode = ViewData["AppId431960Mode"] as bool? ?? false;
-    // 数据源控制：从 ViewData 读取 IsBurned，默认为 true (走 Base64)
     bool isBurned = ViewData["IsBurned"] as bool? ?? true; 
     
     int itemWidth  = 160;
     int gap        = 20;
     int imgHeight  = isSquareMode ? 160 : 90;
+
+    string gridCss = $"display: grid; grid-template-columns: repeat(auto-fill, {itemWidth}px); gap: {gap}px;";
+    string cardCss = $"width: {itemWidth}px;";
+    string imgWrapperCss = $"height: {imgHeight}px;";
 }
 <style>
-    .card-base-@guid {
-        position: relative;
-        padding-top: 40px;
-        margin-bottom: 40px;
+    /* ★ 核心修复：强制覆盖全局的绝对定位，让背景和内容自然撑开 */
+    .card-base-@(guid) .card-chrome {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        height: auto !important;
+        background-color: #D6D9E8;
+        padding-top: 10px;
+        padding-bottom: 20px;
+    }
+    
+    .card-base-@(guid) .card-title {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        margin-left: 20px;
+        margin-bottom: 10px;
+        font-weight: 900;
     }
 
+    .card-base-@(guid) {
+        position: relative;
+        margin-bottom: 20px;
+        height: auto !important;
+    }
+
+    /* ===== 视图切换按钮（保持在右上角） ===== */
+    .view-toolbar-@guid {
+        position: absolute;
+        top: 10px; 
+        right: 20px;
+        display: flex;
+        gap: 6px;
+        z-index: 10;
+    }
+
+    .view-btn-@guid {
+        width: 32px;
+        height: 28px;
+        padding: 0;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #333;
+        transition: all 0.2s;
+    }
+
+    .view-btn-@(guid):hover { background: #f0f0f0; }
+    .view-btn-@(guid).active {
+        background: #3b82f6;
+        color: #fff;
+        border-color: #3b82f6;
+    }
+
+    /* ===== 大图标模式（基础） ===== */
     .video-grid-@guid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, 160px);
-        gap: 20px;
+        @Html.Raw(gridCss)
+        margin-left: 20px;
     }
 
     .video-card-content-@guid {
-        width: 160px;
+        @Html.Raw(cardCss)
         overflow: hidden; 
         background-color: #f0f0f0; 
+        display: flex;
+        flex-direction: column;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+
+    .video-card-content-@guid:hover { transform: translateY(-2px); }
+
+    .img-wrapper-@guid {
+        width: 100%;
+        @Html.Raw(imgWrapperCss)
+        overflow: hidden;
     }
 
     .video-card-content-@guid img {
         width: 100% !important;
         height: 100% !important;
-        max-width: 160px !important; 
         object-fit: cover; 
         display: block;
+    }
+
+    .title-bar-@guid {
+        width: 100%;
+        height: 28px;
+        line-height: 28px;
+        background-color: #333333; 
+        color: #ffffff;            
+        font-size: 12px;
+        text-align: center;        
+        padding: 0 8px;
+        box-sizing: border-box;
+        white-space: nowrap;       
+        overflow: hidden;
+        text-overflow: ellipsis;   
+    }
+
+    /* ===== 平铺列表模式（撑满全屏） ===== */
+    .video-grid-@(guid).mode-list {
+        display: grid !important;
+        /* 最小宽度 320px，1fr 表示剩余空间平分，彻底撑满整个容器 */
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+        gap: 15px;
+        margin: 0 20px; 
+    }
+
+    .video-grid-@(guid).mode-list .video-card-content-@guid {
+        width: 100%; 
+        min-height: 86px; 
+        height: auto;     
+        display: flex;
+        flex-direction: row; 
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        background: #f8f9fa;
+        border: 1px solid #eee;
+        border-radius: 6px;
         cursor: pointer;
-        transition: 0.1s ease;
+        box-sizing: border-box;
+        transition: background 0.2s;
+    }
+
+    .video-grid-@(guid).mode-list .video-card-content-@guid:hover {
+        background: #f0f2f5;
+    }
+
+    .video-grid-@(guid).mode-list .video-card-content-@guid img {
+        width: 100px !important;  
+        height: 64px !important; 
+        flex-shrink: 0;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .item-title-@guid {
+        font-size: 14px;
+        color: #333;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 3; /* 从 2 行增加到 3 行，显示更多字 */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-all;
+        flex: 1;
+    }
+
+    /* ===== 详细信息模式（解决挤压，撑满全屏） ===== */
+    .video-grid-@(guid).mode-detail {
+        display: block !important; /* 必须干掉 grid，否则 ol 只会占一列 */
+        margin: 0 20px;
+    }
+
+    .video-grid-@(guid).mode-detail ol {
+        padding-left: 24px;
+        padding-right: 20px;
+        margin: 0;
+    }
+
+    .video-grid-@(guid).mode-detail li {
+        margin-bottom: 12px;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        padding-bottom: 12px;
     }
 </style>
 
-<div class="card-base-@guid" id="@guid">
+<div class="card-base-@(guid)" id="@guid">
     <div class="card-chrome">
-        <h6 class="card-title">视频</h6>
-        <div class="video-grid-@guid" 
-             style="grid-auto-rows: @(imgHeight)px; margin-top: 40px; margin-left: 20px;">
+        <div class="view-toolbar-@guid">
+            <button type="button" class="view-btn-@guid active" data-mode="grid" title="大图标">▦</button>
+            <button type="button" class="view-btn-@guid" data-mode="list" title="平铺列表">☰</button>
+            <button type="button" class="view-btn-@guid" data-mode="detail" title="详细信息">≣</button>
         </div>
+        <h6 class="card-title">视频</h6>
+        <div class="video-grid-@guid"></div>
     </div>
 </div>
 
 <script>
     (() => {
-        const ITEM_WIDTH  = 160;
-        const ITEM_HEIGHT = @(imgHeight);
-        const GAP         = 20;
-        const IS_BURNED   = @(isBurned.ToString().ToLower());
+        const IS_BURNED = @(isBurned.ToString().ToLower());
+        let currentMode = 'grid';
+        let videosData = []; 
 
         async function init() {
             const cardBase = document.getElementById('@guid');
             if (!cardBase) return;
+            
             const grid = cardBase.querySelector(".video-grid-@guid");
-            const chrome = cardBase.querySelector(".card-chrome");
+
+            const toolbar = cardBase.querySelector(".view-toolbar-@guid");
+            toolbar.addEventListener("click", (e) => {
+                const btn = e.target.closest(".view-btn-@guid");
+                if (!btn) return;
+
+                toolbar.querySelectorAll(".view-btn-@guid").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+
+                currentMode = btn.dataset.mode;
+                render(); 
+            });
 
             try {
                 const response = await fetch("/api/Lists/VideoList");
                 if (!response.ok) throw new Error("请求失败");
                 const videosDict = await response.json();
 
-                grid.innerHTML = "";
-
-                // 【修改点】：遍历字典，entries 会返回 [key, value] 的数组
-                Object.entries(videosDict).forEach(([videoId, video]) => {
-                    const sources = [];
-
-                    if (!IS_BURNED) {
-                        // 【模式 A】：IsBurned 为 false，直接使用字典的 Key (videoId) 请求 API
-                        if (videoId) {
-                            sources.push(`/api/AppId431960Mode?id=${encodeURIComponent(videoId)}`);
-                        }
-                    } else {
-                        // 【模式 B】：IsBurned 为 true，使用原有的 Base64 Gallery
-                        if (video.gallery && video.gallery.length > 0) {
-                            video.gallery.forEach(b64 => sources.push("data:image/png;base64," + b64));
-                        }
-                    }
-
-                    if (sources.length === 0) {
-                        sources.push("/images/default-cover.png"); 
-                    }
-
-                    const div = document.createElement("div");
-                    div.className = "video-card-content-@guid";
-
-                    const img = document.createElement("img");
-                    let currentIndex = 0;
-                    
-                    img.src = sources[currentIndex];
-                    img.alt = video.title || "视频";
-
-                    img.onerror = () => {
-                        img.onerror = null; 
-                        img.src = "/images/default-cover.png"; 
-                    };
-
-                    // img.onclick = () => {
-                    //     if (!video.filePath) return;
-                    //     window.location.href = "/files/" + video.filePath.replace(/\\/g, "/");
-                    // };
-
-                    // 改成：
-                    img.onclick = () => {
-                        window.location.href = "/Video/Detail/" + encodeURIComponent(videoId);
-                    };
-
-                    let lastX = null;
-                    img.addEventListener("mousemove", (e) => {
-                        if (lastX === null) { lastX = e.offsetX; return; }
-                        const deltaX = e.offsetX - lastX;
-                        
-                        if (Math.abs(deltaX) >= 16 && sources.length > 1) {
-                            currentIndex = (currentIndex + (deltaX > 0 ? 1 : -1) + sources.length) % sources.length;
-                            img.src = sources[currentIndex];
-                            lastX = e.offsetX;
-                        }
-                    });
-                    img.addEventListener("mouseleave", () => { lastX = null; });
-
-                    div.appendChild(img);
-                    grid.appendChild(div);
-                });
-
-                function updateContainerHeight() {
-                    const count = grid.children.length;
-                    if (count === 0) {
-                        cardBase.style.height = "auto";
-                        chrome.style.height = "auto";
-                        return;
-                    }
-
-                    const cols = Math.max(1, Math.floor((grid.clientWidth + GAP) / (ITEM_WIDTH + GAP)));
-                    const rows = Math.ceil(count / cols);
-                    const gridHeight = rows * ITEM_HEIGHT + (rows - 1) * GAP;
-                    const outres = gridHeight + 140; 
-                    
-                    cardBase.style.height = outres + "px";
-                    chrome.style.height = outres + "px";
-                }
-
-                updateContainerHeight();
-
-                let resizeTimer;
-                window.addEventListener("resize", () => {
-                    if (!document.contains(cardBase)) return;
-                    clearTimeout(resizeTimer);
-                    resizeTimer = setTimeout(updateContainerHeight, 100);
-                });
+                videosData = Object.entries(videosDict).map(([id, data]) => ({ id, data }));
+                render();
 
             } catch (err) {
-                chrome.textContent = "加载视频失败：" + err.message;
-                console.error(err);
+                cardBase.querySelector(".card-chrome").textContent = "加载视频失败：" + err.message;
+            }
+
+            function render() {
+                grid.className = "video-grid-@guid " + (currentMode === 'grid' ? '' : 'mode-' + currentMode);
+                grid.innerHTML = ""; 
+
+                if (currentMode === 'detail') {
+                    renderDetail(grid);
+                } else {
+                    renderCards(grid);
+                }
+            }
+
+            function renderCards(container) {
+                videosData.forEach(({ id, data }) => {
+                    const div = document.createElement("div");
+                    div.className = "video-card-content-@guid";
+                    div.onclick = () => { window.location.href = "/Video/Detail/" + encodeURIComponent(id); };
+
+                    const sources = [];
+                    if (!IS_BURNED) {
+                        if (id) sources.push(`/api/AppId431960Mode?id=${encodeURIComponent(id)}`);
+                    } else {
+                        if (data.gallery && data.gallery.length > 0) {
+                            data.gallery.forEach(b64 => sources.push("data:image/png;base64," + b64));
+                        }
+                    }
+                    if (sources.length === 0) sources.push("/images/default-cover.png");
+
+                    const img = document.createElement("img");
+                    img.src = sources[0];
+                    img.alt = data.title || "视频";
+                    img.onerror = () => { img.onerror = null; img.src = "/images/default-cover.png"; };
+                    
+                    if (currentMode === 'list') {
+                        div.appendChild(img);
+                        const title = document.createElement("div");
+                        title.className = "item-title-@guid"; 
+                        title.textContent = data.title || "未命名视频";
+                        title.title = data.title || "未命名视频"; // 悬浮显示全部文字
+                        div.appendChild(title);
+                    } else {
+                        const imgWrapper = document.createElement("div");
+                        imgWrapper.className = "img-wrapper-@guid";
+                        imgWrapper.appendChild(img);
+                        div.appendChild(imgWrapper);
+
+                        const titleBar = document.createElement("div");
+                        titleBar.className = "title-bar-@guid";
+                        titleBar.textContent = data.title || "未命名视频";
+                        titleBar.title = data.title || "未命名视频"; 
+                        div.appendChild(titleBar);
+                    }
+
+                    container.appendChild(div);
+                });
+            }
+
+            function renderDetail(container) {
+                const ol = document.createElement("ol");
+                // 样式交给 CSS 的 .mode-detail ol 处理
+                
+                videosData.forEach(({ id, data }) => {
+                    const li = document.createElement("li");
+                    
+                    const a = document.createElement("a");
+                    a.href = "/Video/Detail/" + encodeURIComponent(id);
+                    a.style.color = "#1a73e8";
+                    a.style.textDecoration = "none";
+                    a.style.fontSize = "15px";
+                    a.style.fontWeight = "bold";
+                    a.textContent = data.title || "未命名视频";
+                    li.appendChild(a);
+
+                    const meta = document.createElement("div");
+                    meta.style.fontSize = "13px";
+                    meta.style.color = "#666";
+                    meta.style.marginTop = "6px";
+                    
+                    let metaText = `ID: ${id} | 作者: ${data.author || '未知'}`;
+                    if (data.duration) metaText += ` | 时长: ${data.duration.split('.')[0]}`;
+                    if (data.tags) metaText += ` | 标签: ${data.tags.join(', ')}`;
+                    
+                    meta.textContent = metaText;
+                    li.appendChild(meta);
+                    ol.appendChild(li);
+                });
+                container.appendChild(ol);
             }
         }
-
         init();
     })();
 </script>

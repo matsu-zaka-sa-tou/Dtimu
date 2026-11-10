@@ -5,33 +5,49 @@
 }
 
 <style>
-    .album-grid {
-        display: grid;
-        grid-auto-rows: 120px;
-        gap: 0px;
+    /* ★ 核心修复：干掉绝对定位 */
+    .card-combined-base-@(guid) .card-chrome {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        height: auto !important;
+        background-color: #D6D9E8;
+        padding-top: 10px;
+        padding-bottom: 20px;
     }
 
-    .album-item img {
+    .card-combined-base-@(guid) .card-title {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        margin-left: 20px;
+        margin-bottom: 10px;
+        font-weight: 900;
+    }
+
+    .card-combined-base-@(guid) {
+        position: relative;
+        margin-bottom: 20px;
+        height: auto !important;
+    }
+
+    .album-grid-@(guid) {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 120px); /* 纯CSS自适应网格 */
+        gap: 10px; /* 加点间隙更好看 */
+        margin-left: 20px;
+    }
+
+    .album-item-@(guid) img {
         width: 120px;
         height: 120px;
         object-fit: cover;
         cursor: pointer;
         display: block;
+        border-radius: 4px;
     }
 
-    .album-text {
-        width: 120px;
-        height: 120px;
-        color: white;
-        font-size: 18px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        cursor: pointer;
-    }
-
-    .preview-box {
+    .preview-box-@(guid) {
         position: fixed;
         width: 200px;
         height: 200px;
@@ -45,41 +61,21 @@
         transition: opacity 0.12s ease-out;
     }
 
-        .preview-box.show {
-            display: block;
-            opacity: 1;
-        }
+    .preview-box-@(guid).show { display: block; opacity: 1; }
+    .preview-box-@(guid).hide { opacity: 0; }
 
-        .preview-box.hide {
-            opacity: 0;
-        }
-
-        .preview-box img,
-        .preview-box .preview-text {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 18px;
-            text-align: center;
-            padding: 5px;
-        }
-
-    .card-combined-base {
-        position: relative;
-        padding-top: 40px;
-        margin-bottom: 40px;
+    .preview-box-@(guid) img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 </style>
 
-<div class="card-combined-base" id="@guid">
+<div class="card-combined-base-@(guid)" id="@guid">
     <div class="card-chrome">
         <h6 class="card-title">音乐</h6>
-        <div class="album-grid" style="margin-top:40px;margin-left:40px"></div>
-        <div id="previewBox" class="preview-box"></div>
+        <div class="album-grid-@(guid)"></div>
+        <div id="previewBox-@(guid)" class="preview-box-@(guid)"></div>
     </div>
 </div>
 
@@ -89,16 +85,10 @@
             const cardBase = document.getElementById('@guid');
             if (!cardBase) return;
 
-            const Size = 120;
-            const PREW = 200, PREH = 200;
+            const albumGrid = cardBase.querySelector('.album-grid-@(guid)');
+            const preview = cardBase.querySelector('.preview-box-@(guid)');
 
-            const chrome = cardBase.querySelector('.card-chrome');
-            const albumGrid = chrome.querySelector('.album-grid');
-            const preview = chrome.querySelector('.preview-box');
-
-            /* ★ 全局封面工具：由 _Layout.cshtml 提供 */
             if (!window.CoverUtil) {
-                chrome.textContent = '封面工具未加载：请检查 _Layout.cshtml 里的 CoverUtil 脚本';
                 console.error('window.CoverUtil 不存在');
                 return;
             }
@@ -107,34 +97,19 @@
             try {
                 albumsDict = await fetch('/api/Lists/AlumbList').then(r => r.json());
             } catch (e) {
-                chrome.textContent = '加载音乐失败：' + e.message;
                 console.error(e);
                 return;
             }
 
-            const albumsInfo = Object.entries(albumsDict).map(([key, value]) => ({
-                key, ...value
-            }));
+            const albumsInfo = Object.entries(albumsDict).map(([key, value]) => ({ key, ...value }));
 
-            /* ★ 缓存与生成全部交给 CoverUtil */
-            function coverUrl(item) {
-                return window.CoverUtil.coverUrl(item);
-            }
-
-            function updateGridColumns() {
-                const containerWidth = albumGrid.clientWidth;
-                const cols = Math.max(1, Math.floor(containerWidth / Size));
-                albumGrid.style.gridTemplateColumns = `repeat(${cols}, ${Size}px)`;
-                return cols;
-            }
+            function coverUrl(item) { return window.CoverUtil.coverUrl(item); }
 
             albumGrid.innerHTML = '';
 
             albumsInfo.forEach((item) => {
                 const el = document.createElement("div");
-                el.classList.add("album-item");
-                el.style.width = Size + "px";
-                el.style.height = Size + "px";
+                el.classList.add("album-item-@(guid)");
 
                 const img = document.createElement("img");
                 img.src = coverUrl(item);
@@ -149,12 +124,8 @@
                     preview.innerHTML = `<img src="${coverUrl(item)}" alt="" />`;
 
                     const rect = el.getBoundingClientRect();
-
-                    let left = rect.left + rect.width / 2 - PREW / 2;
-                    let top  = rect.top  + rect.height / 2 - PREH / 2;
-
-                    preview.style.left = left + "px";
-                    preview.style.top  = top  + "px";
+                    preview.style.left = (rect.left + rect.width / 2 - 100) + "px";
+                    preview.style.top  = (rect.top  + rect.height / 2 - 100) + "px";
 
                     preview.classList.add("show");
                     preview.classList.remove("hide");
@@ -174,15 +145,11 @@
                 el.addEventListener("mousemove", showPreview);
                 el.addEventListener("mouseleave", hidePreview);
 
-                /* ★ 关键：点击必须走 PJAX，不能直接 location.href 硬跳 */
                 el.addEventListener("click", (e) => {
                     if (e.defaultPrevented) return;
                     if (e.button !== 0) return;
-                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-
                     const url = "/Album/Detail?name=" + encodeURIComponent(item.key);
-
-                    if (window.MvPjax && typeof window.MvPjax.navigate === 'function') {
+                    if (window.MvPjax) {
                         e.preventDefault();
                         window.MvPjax.navigate(url, true);
                     } else {
@@ -190,23 +157,8 @@
                     }
                 });
             });
-
-            function updateContainerHeight() {
-                const cols = updateGridColumns();
-                const rows = Math.ceil(albumGrid.children.length / cols);
-                const outres = rows * Size;
-                cardBase.style.height = outres + "px";
-                chrome.style.height = outres + "px";
-            }
-
-            updateContainerHeight();
-
-            let resizeTimer;
-            window.addEventListener("resize", () => {
-                if (!document.contains(cardBase)) return;
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(updateContainerHeight, 100);
-            });
+            
+            // ★ 彻底去掉了原本在这里的 updateContainerHeight 计算高度的代码
         }
 
         init();

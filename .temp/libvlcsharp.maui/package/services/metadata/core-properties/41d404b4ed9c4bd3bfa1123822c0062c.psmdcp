@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coreProperties xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.openxmlformats.org/package/2006/metadata/core-properties">
+  <dc:creator>VideoLAN</dc:creator>
+  <dc:description>LibVLCSharp is a cross-platform audio and video API for .NET platforms based on VideoLAN's LibVLC Library. It provides a comprehensive multimedia API that can be used across mobile, server and desktop to render video and output audio. Mono, .NET Framework and .NET Core runtimes are supported.
+  
+LibVLCSharp.MAUI contains the integration with .NET MAUI.
+
+This package contains the views that allows to display a video played with LibVLCSharp
+in a MAUI app. It depends on LibVLCSharp.
+
+LibVLC needs to be installed separately, see VideoLAN.LibVLC.* packages.</dc:description>
+  <dc:identifier>LibVLCSharp.MAUI</dc:identifier>
+  <version>3.10.2</version>
+  <keywords>libvlc vlc videolan native c/c++ video audio player media mediaplayer codec ffmpeg xamarin graphics ios android linux windows macos cross-platform</keywords>
+  <lastModifiedBy>NuGet.Packaging, Version=7.6.0.37803, Culture=neutral, PublicKeyToken=31bf3856ad364e35;Microsoft Windows NT 10.0.19045.0;.NET Framework 4.7.2</lastModifiedBy>
+</coreProperties>

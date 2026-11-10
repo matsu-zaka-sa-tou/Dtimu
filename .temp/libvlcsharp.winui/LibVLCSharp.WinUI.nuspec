@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>LibVLCSharp.WinUI</id>
+    <version>3.10.2</version>
+    <title>LibVLCSharp.WinUI</title>
+    <authors>VideoLAN</authors>
+    <license type="expression">LGPL-2.1-or-later</license>
+    <licenseUrl>https://licenses.nuget.org/LGPL-2.1-or-later</licenseUrl>
+    <icon>icon.png</icon>
+    <readme>README.md</readme>
+    <description>LibVLCSharp.WinUI contains the WinUI VideoView integration for LibVLCSharp.
+
+This package contains the core LibVLCSharp APIs and the WinUI view that allows to display video played with LibVLCSharp in a WinUI app.
+
+LibVLC needs to be installed separately, see VideoLAN.LibVLC.Windows.</description>
+    <releaseNotes>https://code.videolan.org/videolan/LibVLCSharp/blob/master/NEWS</releaseNotes>
+    <tags>libvlc vlc videolan native c/c++ video audio player media mediaplayer codec ffmpeg xamarin graphics ios android linux windows macos cross-platform winui</tags>
+    <repository type="git" url="https://code.videolan.org/videolan/LibVLCSharp" commit="3082c09ca955131c705fc4767fde03e9c4a14999" />
+    <dependencies>
+      <group targetFramework="net10.0-windows10.0.19041">
+        <dependency id="Microsoft.Windows.SDK.BuildTools" version="10.0.22621.756" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.WindowsAppSDK" version="1.7.250909003" exclude="Build,Analyzers" />
+        <dependency id="SharpDX.Direct3D11" version="4.2.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net6.0-windows10.0.17763">
+        <dependency id="Microsoft.Windows.SDK.BuildTools" version="10.0.22621.756" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.WindowsAppSDK" version="1.7.250909003" exclude="Build,Analyzers" />
+        <dependency id="SharpDX.Direct3D11" version="4.2.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net8.0-windows10.0.19041">
+        <dependency id="Microsoft.Windows.SDK.BuildTools" version="10.0.22621.756" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.WindowsAppSDK" version="1.7.250909003" exclude="Build,Analyzers" />
+        <dependency id="SharpDX.Direct3D11" version="4.2.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net9.0-windows10.0.19041">
+        <dependency id="Microsoft.Windows.SDK.BuildTools" version="10.0.22621.756" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.WindowsAppSDK" version="1.7.250909003" exclude="Build,Analyzers" />
+        <dependency id="SharpDX.Direct3D11" version="4.2.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

@@ -48,6 +48,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<!-- VLC 原生库：Windows 的 libvlc.dll（已有）+ Android 的 .so（新增）
+		     iOS / MacCatalyst 如需真机运行再加：VideoLAN.LibVLC.iOS -->
+		<PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.21" Condition="$(TargetFramework.Contains('-windows'))" />
+		<PackageReference Include="VideoLAN.LibVLC.Android" Version="3.6.5" Condition="$(TargetFramework.Contains('-android'))" />
+
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
@@ -69,6 +74,24 @@
 		<PackageReference Include="LibVLCSharp.MAUI" Version="3.10.2" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Views\FrontPageViews\PhotoView.xaml.cs">
+			<DependentUpon>PhotoView.xaml</DependentUpon>
+		</Compile>
+	  <Compile Update="Views\FrontPageViews\MusicView.xaml.cs">
+	    <DependentUpon>MusicView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\FrontPageViews\SettingsView.xaml.cs">
+	    <DependentUpon>SettingsView.xaml</DependentUpon>
+	  </Compile>
+		<Compile Update="Views\FrontPageViews\VideoView.xaml.cs">
+			<DependentUpon>VideoView.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\PlayerViews\VedioPlayer.xaml.cs">
+			<DependentUpon>VedioPlayer.xaml</DependentUpon>
+		</Compile>
 	</ItemGroup>
 
 </Project>

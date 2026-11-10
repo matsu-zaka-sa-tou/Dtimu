@@ -11,6 +11,8 @@ Environment=DTIMU_MEDIA_ROOT=/var/media
 Environment=DTIMU_URLS=http://0.0.0.0:8090
 Environment=DTIMU_QP=16
 Environment=DTIMU_INSECURE_TLS=1
+# 默认档位（?tier= 与 UA 未命中时的兜底；可选 low/mid/high，详见 TIERS.md）
+# Environment=DTIMU_DEFAULT_TIER=mid
 # 零磁盘模式：产物写内存 tmpfs + 远程源流式直连（零落盘）+ 看完 15 分钟自动删
 Environment=DTIMU_SCRATCH_ROOT=/dev/shm/dtimu
 Environment=DTIMU_REMOTE_MODE=stream

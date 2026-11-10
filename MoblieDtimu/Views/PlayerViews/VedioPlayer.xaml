@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vlc="clr-namespace:LibVLCSharp.MAUI;assembly=LibVLCSharp.MAUI"
+             x:Class="MoblieDtimu.Views.PlayerViews.VedioPlayer">
+
+    <!-- 单格 Grid：视频铺满整个控件，控制条/封面/缓冲层全部悬浮其上 -->
+    <Grid BackgroundColor="Black">
+
+        <!-- 第0层：VLC 原生视频视图 -->
+        <vlc:VideoView x:Name="VlcView"
+                       HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+        <!-- 第1层：点击捕获层（近透明但参与命中测试，否则 Windows 下点不到；点视频区切换控制条显隐） -->
+        <Grid BackgroundColor="#01000000">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnSurfaceTapped" />
+            </Grid.GestureRecognizers>
+        </Grid>
+
+        <!-- 第2层：未播放时的封面（半透明遮罩，点击任意处即播放） -->
+        <Grid x:Name="CoverOverlay"
+              BackgroundColor="#96000000">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnTogglePlayPause" />
+            </Grid.GestureRecognizers>
+            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
+                <Label Text="▶" FontSize="52" TextColor="#E6FFFFFF" HorizontalOptions="Center" />
+                <Label Text="点击播放" FontSize="13" TextColor="#B3FFFFFF" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- 第2层b：缓冲指示 -->
+        <VerticalStackLayout x:Name="BufferingOverlay"
+                             IsVisible="false"
+                             HorizontalOptions="Center" VerticalOptions="Center" Spacing="6">
+            <ActivityIndicator IsRunning="True" Color="#00FFFF" />
+            <Label Text="缓冲中..." FontSize="12" TextColor="#E6FFFFFF" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+
+        <!-- 第3层：底部控制条（悬浮在视频下方，可显隐） -->
+        <Grid x:Name="ControlsPanel"
+              VerticalOptions="End"
+              BackgroundColor="#96000000"
+              Padding="6,4"
+              ColumnDefinitions="44,*,Auto,40,48">
+
+            <Button x:Name="PlayPauseButton"
+                    Text="▶" FontSize="20"
+                    BackgroundColor="Transparent" TextColor="White"
+                    Padding="0" Margin="2,0" CornerRadius="4"
+                    Clicked="OnTogglePlayPause" />
+
+            <Slider x:Name="ProgressBar"
+                    Grid.Column="1"
+                    Minimum="0" Maximum="1" Value="0"
+                    MinimumTrackColor="#00FFFF" MaximumTrackColor="#66FFFFFF" ThumbColor="White"
+                    Margin="8,10"
+                    DragStarted="OnProgressDragStarted"
+                    DragCompleted="OnProgressDragCompleted"
+                    ValueChanged="OnProgressValueChanged" />
+
+            <Label x:Name="TimeLabel"
+                   Grid.Column="2"
+                   Text="00:00 / 00:00"
+                   FontSize="11" TextColor="#DDDDDD"
+                   VerticalOptions="Center" Margin="4,0" />
+
+            <Button x:Name="MuteButton"
+                    Grid.Column="3"
+                    Text="🔊" FontSize="16"
+                    BackgroundColor="Transparent" TextColor="White"
+                    Padding="0" CornerRadius="4"
+                    Clicked="OnToggleMute" />
+
+            <Button x:Name="DisplayModeButton"
+                    Grid.Column="4"
+                    Text="适应" FontSize="12"
+                    BackgroundColor="Transparent" TextColor="White"
+                    Padding="0" CornerRadius="4"
+                    Clicked="OnCycleDisplayMode" />
+        </Grid>
+
+        <!-- 第4层：错误提示 -->
+        <Label x:Name="ErrorLabel"
+               IsVisible="false"
+               Text="播放出错"
+               FontSize="13" TextColor="#FFFF8888"
+               HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+               LineBreakMode="WordWrap" Margin="24,0" />
+    </Grid>
+</ContentView>

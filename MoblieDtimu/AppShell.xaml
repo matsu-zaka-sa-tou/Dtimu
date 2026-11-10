@@ -4,13 +4,10 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MoblieDtimu"
-    Title="MoblieDtimu"
-    Shell.TabBarBackgroundColor="#1A1A1A"
-    Shell.TabBarForegroundColor="#FF9800"
-    Shell.TabBarUnselectedColor="#888888"
-    Shell.TabBarTitleColor="#FFFFFF">
+    Title="MoblieDtimu">
 
-    <TabBar>
-        
-    </TabBar>
+    <!-- 单页宿主：不放 TabBar/FlyoutItem（导航已由 MainPage 自定义底部栏接管），
+         且避免空 Tab 再次触发 Shell CurrentItem 解析崩溃 -->
+    <ShellContent Title="主页"
+                  ContentTemplate="{DataTemplate local:MainPage}" />
 </Shell>

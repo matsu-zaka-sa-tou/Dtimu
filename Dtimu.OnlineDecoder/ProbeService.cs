@@ -7,19 +7,20 @@ namespace Dtimu.OnlineDecoder;
 
 internal static class Modes
 {
-    /// <summary>H.264 8bit + AAC/MP3 且 ≤1080p60（L4.2）：纯重封装，零画质损失。</summary>
+    /// <summary>H.264 8bit + AAC/MP3 且全部参数在档位内：纯重封装，零画质损失。</summary>
     public const string Remux = "remux";
 
     /// <summary>视频兼容但音频不是 AAC/MP3：视频直通，仅音频转 AAC。</summary>
     public const string RemuxAudio = "remux-audio";
 
-    /// <summary>HEVC/VP9/超限 H.264 等 UHD630 可硬解的源：VAAPI 硬解 → scale_vaapi 落 8bit（超限源同步降分辨率）→ 硬编。</summary>
+    /// <summary>HEVC/VP9/超档 H.264 等 UHD630 可硬解的源：VAAPI 硬解 → scale_vaapi 落 8bit（超档同步降分辨率）→ 硬编。</summary>
     public const string Transcode = "transcode";
 
-    /// <summary>Hi10P / AV1 等硬解不了的源：CPU 软解 → scale 落 nv12（超限源同步降分辨率）→ hwupload → 硬编。</summary>
+    /// <summary>Hi10P / AV1 等硬解不了的源：CPU 软解 → scale 落 nv12（超档同步降分辨率）→ hwupload → 硬编。</summary>
     public const string TranscodeSw = "transcode-sw";
 }
 
+/// <summary>ffprobe 探测的源裸参数（档位无关；档位规划见 <see cref="TierSpec.Plan"/>）。</summary>
 internal sealed record MediaInfo(
     string VideoCodec,
     string? PixFmt,
@@ -29,13 +30,9 @@ internal sealed record MediaInfo(
     double DurationSec,
     int Width,
     int Height,
-    double FrameRate,
-    bool Downscale,       // 超出手机硬解吞吐线，需降分辨率
-    int TargetWidth,
-    int TargetHeight,
-    string Mode);
+    double FrameRate);
 
-/// <summary>ffprobe 封装 + 手机兼容性判定（本地按 mtime 缓存，远程 URL 按 TTL 缓存）。</summary>
+/// <summary>ffprobe 封装（本地按 mtime 缓存，远程 URL 按 TTL 缓存）。</summary>
 internal sealed class ProbeService(string ffprobePath)
 {
     public static readonly string[] Extensions =
@@ -158,64 +155,9 @@ internal sealed class ProbeService(string ffprobePath)
 
             if (vCodec.Length == 0) return null;
 
-            var (down, tw, th) = TargetSize(vWidth, vHeight, vFps);
-            return new MediaInfo(vCodec, vPix, vProfile, vLevel, aCodec, duration,
-                vWidth, vHeight, vFps, down, tw, th,
-                Decide(vCodec, vPix, vProfile, vLevel, aCodec, vWidth, vHeight, vFps));
+            return new MediaInfo(vCodec, vPix, vProfile, vLevel, aCodec, duration, vWidth, vHeight, vFps);
         }
         catch { return null; }
-    }
-
-    /// <summary>
-    /// 低配手机通吃目标：H.264 8bit(yuv420p) High/Main/Baseline + AAC/MP3 + ≤L4.2（1080p60）。
-    /// 超过 L4.2 吞吐（如 4K60@L5.2）的源，手机硬解吃不下 → 必须降分辨率重编。
-    /// 四分支见 <see cref="Modes"/>。
-    /// </summary>
-    private static string Decide(string vCodec, string? pix, string? profile, int? level, string? audio,
-        int width, int height, double fps)
-    {
-        bool tenBit = pix?.Contains("p10", StringComparison.Ordinal) == true;
-        bool vOk = vCodec == "h264"
-            && (pix == "yuv420p" || pix == "yuvj420p")
-            && profile is "High" or "Main" or "Baseline" or "Constrained Baseline"
-            && (level is null || level <= 42)   // L4.2 = 1080p60：骁龙 400 级以上硬解均支持
-            && !TooHeavy(width, height, fps);    // level 标注可能不实，按实测分辨率+帧率兜底
-        bool aOk = audio is "aac" or "mp3";
-
-        if (vOk && aOk) return Modes.Remux;
-        if (vOk) return Modes.RemuxAudio;
-        // UHD630 (Gen9.5) 没有 AV1 解码，也没有 H.264 10bit 解码 → 只能 CPU 软解再上载
-        if (vCodec == "av1" || (vCodec == "h264" && tenBit)) return Modes.TranscodeSw;
-        // HEVC 8/10bit、VP9 8/10bit、4K/高帧率 H.264 都能 VAAPI 硬解
-        return Modes.Transcode;
-    }
-
-    /// <summary>低配手机硬解通吃线：H.264 High@L4.2 = 1920×1080@60（52.2 万宏块/秒）。</summary>
-    private const int MaxWidth = 1920;
-    private const double MaxMbsPerSec = 522_240; // Level 4.2
-
-    private static bool TooHeavy(int w, int h, double fps)
-    {
-        if (w <= 0 || h <= 0) return false;
-        if (w > MaxWidth) return true;
-        double mbs = Math.Ceiling(w / 16.0) * Math.Ceiling(h / 16.0);
-        return mbs * (fps > 0 ? fps : 60) > MaxMbsPerSec; // 帧率未知按 60 保守判定
-    }
-
-    /// <summary>计算目标尺寸：保比例缩至 ≤1920 宽且 ≤L4.2 宏块吞吐，宽高偶数对齐。</summary>
-    private static (bool down, int tw, int th) TargetSize(int w, int h, double fps)
-    {
-        if (w <= 0 || h <= 0) return (false, w, h);
-        double scale = 1.0;
-        if (w > MaxWidth) scale = Math.Min(scale, (double)MaxWidth / w);
-        double mbs = Math.Ceiling(w / 16.0) * Math.Ceiling(h / 16.0);
-        double efps = fps > 0 ? fps : 60;
-        if (mbs * efps > MaxMbsPerSec)
-            scale = Math.Min(scale, Math.Sqrt(MaxMbsPerSec / (mbs * efps))); // 宏块数 ~ scale²
-        if (scale >= 1.0 - 1e-9) return (false, w, h);
-        int tw = Math.Max(2, (int)Math.Floor(w * scale / 2) * 2);
-        int th = Math.Max(2, (int)Math.Floor(h * scale / 2) * 2);
-        return (true, tw, th);
     }
 
     /// <summary>解析 ffprobe 的分数帧率字段（如 "60/1"、"30000/1001"）。</summary>

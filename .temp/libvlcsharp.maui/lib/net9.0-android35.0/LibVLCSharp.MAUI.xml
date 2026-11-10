@@ -1,0 +1,1053 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LibVLCSharp.MAUI</name>
+    </assembly>
+    <members>
+        <member name="T:LibVLCSharp.MAUI.AppHostBuilderExtensions">
+            <summary>
+            MAUI extensions
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.AppHostBuilderExtensions.UseLibVLCSharp(Microsoft.Maui.Hosting.MauiAppBuilder)">
+            <summary>
+            MAUI builder helper
+            </summary>
+            <param name="builder">MauiAppBuilder</param>
+            <returns>configured builder for libvlcsharp</returns>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.Converters.BufferingProgressToBoolConverter">
+            <summary>
+            Converts a value not equals to 0 and 1 to true.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.Converters.BufferingProgressToBoolConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Modifies the source data before passing it to the target for display in the UI.
+            </summary>
+            <param name="value">The source data being passed to the target.</param>
+            <param name="targetType">The type of the target property.</param>
+            <param name="parameter">An optional parameter to be used in the converter logic.</param>
+            <param name="culture">The culture of the conversion.</param>
+            <returns>true if value is not equals to 0 or 1, false otherwise</returns>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.Converters.BufferingProgressToBoolConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Not implemented
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.Converters.ObjectToBoolConverter">
+            <summary>
+            Converts not null object to true.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.Converters.ObjectToBoolConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Modifies the source data before passing it to the target for display in the UI.
+            </summary>
+            <param name="value">The source data being passed to the target.</param>
+            <param name="targetType">The type of the target property.</param>
+            <param name="parameter">An optional parameter to be used in the converter logic.</param>
+            <param name="culture">The culture of the conversion.</param>
+            <returns>true if value is not null, false otherwise</returns>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.Converters.ObjectToBoolConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Not implemented
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.Dispatcher">
+            <summary>
+            Object that provides services for managing the queue of work items for a thread
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.Dispatcher.InvokeAsync(System.Action)">
+            <summary>
+            Schedules the provided callback on the UI thread from a worker thread
+            </summary>
+            <param name="action">The callback on which the dispatcher returns when the event is dispatched</param>
+            <returns>The task object representing the asynchronous operation</returns>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.DisplayInformation">
+            <summary>
+            Monitors display-related information for an application view.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.DisplayInformation.ScalingFactor">
+            <summary>
+            Gets the scale factor
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.DisplayRequest">
+            <summary>
+            Represents a display request
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.DisplayRequest.RequestActive">
+            <summary>
+            Activates a display request
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.DisplayRequest.RequestRelease">
+            <summary>
+            Deactivates a display request
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.Effects.ClickEffect">
+            <summary>
+            Click effect.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.Effects.ClickEffect.Invoke(Microsoft.Maui.Controls.VisualElement)">
+            <summary>
+            Apply a click effect.
+            </summary>
+            <param name="sender">The object on which to invoke the trigger action.</param>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.VideoViewHandler">
+            <summary>
+            MAUI view handler for the VideoView
+            </summary>
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.VideoViewHandler.ConnectHandler(LibVLCSharp.Platforms.Android.VideoView)">
+            <inheritdoc />
+        </member>
+        <member name="M:LibVLCSharp.MAUI.VideoViewHandler.DisconnectHandler(LibVLCSharp.Platforms.Android.VideoView)">
+            <inheritdoc />
+        </member>
+        <member name="M:LibVLCSharp.MAUI.VideoViewHandler.CreatePlatformView">
+            <inheritdoc />
+        </member>
+        <member name="F:LibVLCSharp.MAUI.VideoViewHandler.PropertyMapper">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.VideoViewHandler.#ctor">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.VideoViewHandler.MapMediaPlayer(LibVLCSharp.MAUI.VideoViewHandler,LibVLCSharp.MAUI.VideoView)">
+            <summary>
+            Attach mediaplayer to the native view
+            </summary>
+            <param name="handler"></param>
+            <param name="view"></param>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.IOrientationHandler">
+            <summary>
+            Force Device Orientation.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.IOrientationHandler.LockOrientation">
+            <summary>
+            Lock device's orientation.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.IOrientationHandler.UnLockOrientation">
+            <summary>
+            Unlock device's orientation.
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.IPowerManager">
+            <summary>
+            Interface for power management.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.IPowerManager.KeepScreenOn">
+            <summary>
+            Gets or sets a value indicating whether the screen should be kept on.
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.PageEventArgs">
+            <summary>
+            Represents event data for page-related events.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PageEventArgs.Page">
+            <summary>
+            Gets the associated <see cref="P:LibVLCSharp.MAUI.PageEventArgs.Page"/> instance.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PageEventArgs.#ctor(Microsoft.Maui.Controls.Page)">
+            <summary>
+            Initializes a new instance of the <see cref="T:LibVLCSharp.MAUI.PageEventArgs"/> class with the specified page.
+            </summary>
+            <param name="page">The page associated with the event.</param>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.LifecycleHelper">
+            <summary>
+            Provides helper methods for handling page lifecycle events.
+            </summary>
+        </member>
+        <member name="E:LibVLCSharp.MAUI.LifecycleHelper.PageAppearing">
+            <summary>
+            Occurs when a page is appearing.
+            </summary>
+        </member>
+        <member name="E:LibVLCSharp.MAUI.LifecycleHelper.PageDisappearing">
+            <summary>
+            Occurs when a page is disappearing.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.LifecycleHelper.RegisterPageLifecycleEvents">
+            <summary>
+            Registers the page lifecycle events to track page appearing and disappearing.
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.MediaPlayerElement">
+            <summary>
+            Represents an object that uses a <see cref="T:LibVLCSharp.Shared.MediaPlayer"/> to render audio and video to the display.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.MediaPlayerElement.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:LibVLCSharp.MAUI.MediaPlayerElement"/> class.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.MediaPlayerElement.LibVLCProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.MediaPlayerElement.LibVLC"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.MediaPlayerElement.LibVLC">
+            <summary>
+            Gets the <see cref="T:LibVLCSharp.Shared.LibVLC"/> instance.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.MediaPlayerElement.MediaPlayerProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.MediaPlayerElement.MediaPlayer"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.MediaPlayerElement.MediaPlayer">
+            <summary>
+            Gets the <see cref="T:LibVLCSharp.Shared.MediaPlayer"/> instance.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.MediaPlayerElement.PlaybackControls">
+            <summary>
+            Gets or sets the playback controls for the media.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.MediaPlayerElement.VideoViewProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.MediaPlayerElement.VideoView"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.MediaPlayerElement.VideoView">
+            <summary>
+            Gets or sets the video view.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.MediaPlayerElement.EnableRendererDiscovery">
+            <summary>
+            Enable or disable renderer discovery.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.MediaPlayerElement.OnParentSet">
+            <summary>
+            Invoked whenever the <see cref="P:Microsoft.Maui.Controls.Element.Parent"/> of an element is set. 
+            Implement this method in order to add behavior when the element is added to a parent.
+            </summary>
+            <remarks>Implementors must call the base method.</remarks>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.MediaPlayerElement.OnPageAppearing(System.Object,System.EventArgs)">
+            <summary>
+            Handle page appearing logic
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.MediaPlayerElement.OnPageDisappearing(System.Object,System.EventArgs)">
+            <summary>
+            Handle page disappearing logic
+            </summary> minimize change.
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.PlaybackControls">
+            <summary>
+            Represents the playback controls for a <see cref="T:LibVLCSharp.Shared.MediaPlayer"/>.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PlaybackControls.#ctor">
+            <summary>
+            Initializes a new instance of <see cref="T:LibVLCSharp.MAUI.PlaybackControls"/> class.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PlaybackControls.Finalize">
+            <summary>
+            Finalizer
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.ButtonColorProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.ButtonColor"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.ButtonColor">
+            <summary>
+            Gets or sets the button color.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.ForegroundProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.Foreground"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.Foreground">
+            <summary>
+            Gets or sets the button color.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.MainColorProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.MainColor"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.MainColor">
+            <summary>
+            Gets or sets the main color.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.TracksButtonStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.TracksButtonStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.TracksButtonStyle">
+            <summary>
+            Gets or sets the tracks button style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.BufferingProgressBarStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.BufferingProgressBarStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.BufferingProgressBarStyle">
+            <summary>
+            Gets or sets the controls panel style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.ButtonBarStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.ButtonBarStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.ButtonBarStyle">
+            <summary>
+            Gets or sets the button bar style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.CastButtonStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.CastButtonStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.CastButtonStyle">
+            <summary>
+            Gets or sets the cast button style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.ControlsPanelStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.ControlsPanelStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.ControlsPanelStyle">
+            <summary>
+            Gets or sets the controls panel style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.UnLockControlsPanelStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.UnLockControlsPanelStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.UnLockControlsPanelStyle">
+            <summary>
+            Gets or sets the unlock controls panel style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.UnLockButtonStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.UnLockButtonStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.UnLockButtonStyle">
+            <summary>
+            Gets or sets the unlock controls panel style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.MessageStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.MessageStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.MessageStyle">
+            <summary>
+            Gets or sets the message style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.PlayPauseButtonStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.PlayPauseButtonStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.PlayPauseButtonStyle">
+            <summary>
+            Gets or sets the play/pause button style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.RemainingTimeLabelStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.RemainingTimeLabelStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.RemainingTimeLabelStyle">
+            <summary>
+            Gets or sets the remaining time label style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.ElapsedTimeLabelStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.ElapsedTimeLabelStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.ElapsedTimeLabelStyle">
+            <summary>
+            Gets or sets the elapsed time label style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.SeekBarStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.SeekBarStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.SeekBarStyle">
+            <summary>
+            Gets or sets the seek bar style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.StopButtonStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.StopButtonStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.StopButtonStyle">
+            <summary>
+            Gets or sets the stop button style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.VideoViewProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.VideoView"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.VideoView">
+            <summary>
+            Gets or sets the associated <see cref="P:LibVLCSharp.MAUI.PlaybackControls.VideoView"/>.
+            </summary>
+            <remarks>It is only useful to set this property for the aspect ratio feature.</remarks>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.LockButtonStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.LockButtonStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.LockButtonStyle">
+            <summary>
+            Gets or sets the Lock button style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.AspectRatioButtonStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.AspectRatioButtonStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.AspectRatioButtonStyle">
+            <summary>
+            Gets or sets the aspect ratio button style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.RewindButtonStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.RewindButtonStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.RewindButtonStyle">
+            <summary>
+            Gets or sets the rewind button style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.SeekButtonStyleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.SeekButtonStyle"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.SeekButtonStyle">
+            <summary>
+            Gets or sets the rewind button style.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.ButtonBarStartAreaProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.ButtonBarStartArea"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.ButtonBarStartArea">
+            <summary>
+            Gets or sets the view in the button bar start area.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.ButtonBarEndAreaProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.ButtonBarEndArea"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.ButtonBarEndArea">
+            <summary>
+            Gets or sets the view in the button bar end area.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.LibVLCProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.LibVLC"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.LibVLC">
+            <summary>
+            Gets or sets the <see cref="T:LibVLCSharp.Shared.LibVLC"/> instance.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.MediaPlayerProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.MediaPlayer"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.MediaPlayer">
+            <summary>
+            Gets or sets the <see cref="T:LibVLCSharp.Shared.MediaPlayer"/> instance.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.BufferingProgressProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.BufferingProgress"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.BufferingProgress">
+            <summary>
+            Gets or sets a value corresponding to the buffering progress.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.ErrorMessageProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.ErrorMessage"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.ErrorMessage">
+            <summary>
+            Gets the last error message.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.KeepScreenOnProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.KeepScreenOn"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.KeepScreenOn">
+            <summary>
+            Gets or sets a value indicating whether the screen must be kept on when playing.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.PositionProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.Position"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.Position">
+            <summary>
+            Gets or sets the playback position within the media.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.ResourceManagerProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.ResourceManager"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.ResourceManager">
+            <summary>
+            Gets or sets the resource manager to localize strings.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.ShowAndHideAutomaticallyProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.ShowAndHideAutomatically"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.ShowAndHideAutomatically">
+            <summary>
+            Gets or sets a value that indicates whether the controls are shown and hidden automatically.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.IsLockButtonVisibleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.IsLockButtonVisible"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.IsLockButtonVisible">
+            <summary>
+            Gets or sets a value that indicates whether the lock button is shown.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.IsTracksButtonVisibleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.IsTracksButtonVisible"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.IsTracksButtonVisible">
+            <summary>
+            Gets or sets a value that indicates whether the tracks button is shown.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.IsCastButtonVisibleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.IsCastButtonVisible"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.IsCastButtonVisible">
+            <summary>
+            Gets or sets a value indicating whether the cast button is shown.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.IsPlayPauseButtonVisibleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.IsPlayPauseButtonVisible"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.IsPlayPauseButtonVisible">
+            <summary>
+            Gets or sets a value indicating whether the play/pause button is shown.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.IsSeekEnabledProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.IsSeekEnabled"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.IsSeekEnabled">
+            <summary>
+            Gets or sets a value that indicates whether a user can use the seek bar to find a location in the media.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.IsSeekBarVisibleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.IsSeekBarVisible"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.IsSeekBarVisible">
+            <summary>
+            Gets or sets a value that indicates whether the seek bar is shown.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.IsStopButtonVisibleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.IsStopButtonVisible"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.IsStopButtonVisible">
+            <summary>
+            Gets or sets a value that indicates whether the stop button is shown.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.IsAspectRatioButtonVisibleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.IsAspectRatioButtonVisible"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.IsAspectRatioButtonVisible">
+            <summary>
+            Gets or sets a value indicating whether the aspect ratio button is shown.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.IsRewindButtonVisibleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.IsRewindButtonVisible"/> dependency property.
+            </summary>s
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.IsRewindButtonVisible">
+            <summary>
+            Gets or sets a value indicating whether the rewind button is shown.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.PlaybackControls.IsSeekButtonVisibleProperty">
+            <summary>
+            Identifies the <see cref="P:LibVLCSharp.MAUI.PlaybackControls.IsSeekButtonVisible"/> dependency property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.PlaybackControls.IsSeekButtonVisible">
+            <summary>
+            Gets or sets a value indicating whether the seek button is shown.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PlaybackControls.OnParentSet">
+            <summary>
+            Called when the <see cref="P:Microsoft.Maui.Controls.Element.Parent"/> property has changed.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PlaybackControls.SeekBar_DragCompleted(System.Object,System.EventArgs)">
+            <summary>
+            Event handler for when dragging the seek bar completes.
+            Updates the position to the final value set by the user.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PlaybackControls.SeekBar_DragStarted(System.Object,System.EventArgs)">
+            <summary>
+            Event handler for when dragging the seek bar starts.
+            Sets the dragging state to true.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PlaybackControls.SeekBar_ValueChanged(System.Object,Microsoft.Maui.Controls.ValueChangedEventArgs)">
+            <summary>
+            Event handler for when the seek bar value changes while dragging.
+            Updates the displayed time estimation during the dragging process.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PlaybackControls.ShowErrorMessageBox(System.Exception)">
+            <summary>
+            Show an error message box.
+            </summary>
+            <param name="ex">The exception to show.</param>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PlaybackControls.Show">
+            <summary>
+            Shows the tranport controls if they're hidden
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PlaybackControls.Hide">
+            <summary>
+            Hides the playback controls if they're shown
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PlaybackControls.LockButton_ClickedAsync(System.Object,System.EventArgs)">
+            <summary>
+            Trigger when user clicks on the Lock screen Button.
+            </summary>
+            <param name="sender">The control on which the event is triggered</param>
+            <param name="e">Then event's arguments</param>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.PlaybackControls.Handle_SlideCompletedAsync(System.Object,System.EventArgs)">
+            <summary>
+            Trigger when user clicks finished to move the swipe button that unlocks the view.
+            </summary>
+            <param name="sender">The control on which the event is triggered</param>
+            <param name="e">Then event's arguments</param>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.Resources.FontAwesomeCodes">
+            <summary>
+            Simplified list of FontAwesome icons used in the project.
+            Each constant represents a FontAwesome icon's Unicode value.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.Resources.FontAwesomeCodes.Chromecast">
+            <summary>
+            Gets the Unicode character for the FontAwesome Chromecast icon.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.Resources.FontAwesomeCodes.Play">
+            <summary>
+            Gets the Unicode character for the FontAwesome Play icon.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.Resources.FontAwesomeCodes.Pause">
+            <summary>
+            Gets the Unicode character for the FontAwesome Pause icon.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.Resources.FontAwesomeCodes.Stop">
+            <summary>
+            Gets the Unicode character for the FontAwesome Stop icon.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.Resources.FontAwesomeCodes.UnlockAlt">
+            <summary>
+            Gets the Unicode character for the FontAwesome Unlock Alt icon.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.Resources.FontAwesomeCodes.Lock">
+            <summary>
+            Gets the Unicode character for the FontAwesome Lock icon.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.Resources.FontAwesomeCodes.ListAlt">
+            <summary>
+            Gets the Unicode character for the FontAwesome List Alt icon.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.Resources.FontAwesomeCodes.ExpandArrowsAlt">
+            <summary>
+            Gets the Unicode character for the FontAwesome Expand Arrows Alt icon.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.Resources.FontAwesomeCodes.Backward">
+            <summary>
+            Gets the Unicode character for the FontAwesome Backward icon.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.Resources.FontAwesomeCodes.Forward">
+            <summary>
+            Gets the Unicode character for the FontAwesome Forward icon.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.Resources.FontAwesomeCodes.Check">
+            <summary>
+            Gets the Unicode character for the FontAwesome Check icon.
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.Resources.Strings">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.AspectRatio_16_9">
+            <summary>
+              Looks up a localized string similar to 16:9.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.AspectRatio_4_3">
+            <summary>
+              Looks up a localized string similar to 4:3.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.AspectRatioBestFit">
+            <summary>
+              Looks up a localized string similar to Best fit.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.AspectRatioFill">
+            <summary>
+              Looks up a localized string similar to Fill.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.AspectRatioFitScreen">
+            <summary>
+              Looks up a localized string similar to Fit screen.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.AspectRatioOriginal">
+            <summary>
+              Looks up a localized string similar to Original.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.AudioTracks">
+            <summary>
+              Looks up a localized string similar to Audio tracks.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.CastTo">
+            <summary>
+              Looks up a localized string similar to Cast to.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.ClosedCaptions">
+            <summary>
+              Looks up a localized string similar to Subtitles.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.Disable">
+            <summary>
+              Looks up a localized string similar to Disable.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.Error">
+            <summary>
+              Looks up a localized string similar to Error.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.ErrorWithMedia">
+            <summary>
+              Looks up a localized string similar to Error with media {0}.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.NoTrackFoundMessage">
+            <summary>
+              Looks up a localized string similar to No track found.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.OK">
+            <summary>
+              Looks up a localized string similar to OK.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.Track">
+            <summary>
+              Looks up a localized string similar to Track {0}.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.Unlock">
+            <summary>
+              Looks up a localized string similar to SWIPE TO UNLOCK.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.Resources.Strings.VideoTracks">
+            <summary>
+              Looks up a localized string similar to Video tracks.
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.SwipeToUnLockView">
+            <summary>
+            Custom view that allows user to unlock the MediaPlayerElement View.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.SwipeToUnLockView.ThumbProperty">
+            <summary>
+            Defines the ThumbProperty.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.SwipeToUnLockView.Thumb">
+            <summary>
+            Gets or sets the Thumb.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.SwipeToUnLockView.TrackBarProperty">
+            <summary>
+            Defines the TrackBar Property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.SwipeToUnLockView.TrackBar">
+            <summary>
+            Gets or sets the TrackBar.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.SwipeToUnLockView.FillBarProperty">
+            <summary>
+            Defines the FillBar Property.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.SwipeToUnLockView.FillBar">
+            <summary>
+            Gets or sets the FillBar.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.SwipeToUnLockView._panGesture">
+            <summary>
+            Defines the PanGesture.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.SwipeToUnLockView._gestureListener">
+            <summary>
+            Defines the Gesture Listener.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.SwipeToUnLockView.#ctor">
+            <summary>
+            Defaut Constructor.
+            </summary>
+        </member>
+        <member name="E:LibVLCSharp.MAUI.SwipeToUnLockView.SlideCompleted">
+            <summary>
+            The event wich will trigger when the view is completely swiped.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.SwipeToUnLockView.FadeEffect">
+            <summary>
+            Defines the FadeEffect default value.
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.SwipeToUnLockView.AnimLength">
+            <summary>
+            Defines the Animation Length.
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.Themes.Generic">
+            <summary>
+            Represents the generic theme resource dictionary for the MAUI components.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.Themes.Generic.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:LibVLCSharp.MAUI.Themes.Generic"/> class and loads the theme resources.
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.TrackViewModel">
+            <summary>
+            Defines the <see cref="T:LibVLCSharp.MAUI.TrackViewModel" />.
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.TrackViewModel.Id">
+            <summary>
+            Track description Id
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.TrackViewModel.Name">
+            <summary>
+            Track description
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.TrackViewModel.Selected">
+            <summary>
+            The track is selected or not.
+            </summary>
+        </member>
+        <member name="M:LibVLCSharp.MAUI.TrackViewModel.#ctor(System.Int32,System.String)">
+            <summary>
+            TrackViewModel constructor
+            </summary>
+            <param name="id">Track description Id</param>
+            <param name="name">Track description</param>
+        </member>
+        <member name="E:LibVLCSharp.MAUI.TrackViewModel.PropertyChanged">
+            <summary>
+            Occurs when a property value changes
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.VideoView">
+            <summary>
+            Generic MAUI VideoView
+            </summary>
+        </member>
+        <member name="E:LibVLCSharp.MAUI.VideoView.MediaPlayerChanging">
+            <summary>
+            Raised when a new MediaPlayer is set and will be attached to the view
+            </summary>
+        </member>
+        <member name="E:LibVLCSharp.MAUI.VideoView.MediaPlayerChanged">
+            <summary>
+            Raised when a new MediaPlayer is set and attached to the view
+            </summary>
+        </member>
+        <member name="F:LibVLCSharp.MAUI.VideoView.MediaPlayerProperty">
+            <summary>
+            Xamarin.Forms MediaPlayer databinded property
+            </summary>
+        </member>
+        <member name="P:LibVLCSharp.MAUI.VideoView.MediaPlayer">
+            <summary>
+            The MediaPlayer object attached to this view
+            </summary>
+        </member>
+        <member name="T:LibVLCSharp.MAUI.Resource">
+            <summary>
+            Android Resource Designer class.
+            Exposes the Android Resource designer assembly into the project Namespace.
+            </summary>
+        </member>
+    </members>
+</doc>

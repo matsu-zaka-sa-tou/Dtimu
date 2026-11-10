@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MoblieDtimu.Views.FrontPageViews.SettingsView">
+
+    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+        <Label Text="👤 我的"
+               FontSize="28"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"
+               TextColor="#333" />
+        <Label Text="这里放个人信息内容"
+               FontSize="14"
+               TextColor="#999"
+               HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</ContentView>

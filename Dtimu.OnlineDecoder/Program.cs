@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Dtimu.OnlineDecoder;
@@ -25,13 +26,14 @@ string ffmpegPath = Cfg("DTIMU_FFMPEG", "ffmpeg");
 string vaapiDevice = Cfg("DTIMU_VAAPI_DEVICE", "/dev/dri/renderD128");
 bool insecureTls = Cfg("DTIMU_INSECURE_TLS", "0") == "1";
 // 远程源：stream=ffmpeg 直连 URL 零落盘（默认）；cache=先下载到 scratch 再转码
-// （cache 用于兼容 moov 在文件尾且服务器不支持 Range 请求的源站）
 bool remoteStream = !string.Equals(Cfg("DTIMU_REMOTE_MODE", "stream"), "cache", StringComparison.OrdinalIgnoreCase);
 // 空闲清理：转码完成且无人访问超过 N 分钟 → 删除产物释放空间；0=永久保留
 int idleMin = int.TryParse(Cfg("DTIMU_IDLE_DELETE_MIN", "0"), out var im) ? Math.Max(0, im) : 0;
 
 var probe = new ProbeService(Cfg("DTIMU_FFPROBE", "ffprobe"));
-var manager = new TranscodeManager(ffmpegPath, vaapiDevice, qp, probe, insecureTls, idleMin);
+// 档位系统：TierSpec 纯数据 + TierPresets 库预设 + TierRegistry 生效集合/默认档/UA 路由（见 TIERS.md）
+var registry = new TierRegistry(TierPresets.All, Cfg("DTIMU_DEFAULT_TIER", TierPresets.Mid.Id));
+var manager = new TranscodeManager(ffmpegPath, vaapiDevice, qp, probe, insecureTls, idleMin, registry);
 manager.StartSweeper();
 
 app.Lifetime.ApplicationStopping.Register(manager.KillAll);
@@ -40,19 +42,21 @@ app.Logger.LogInformation("Dtimu.OnlineDecoder 媒体根目录 : {Root}", mediaR
 app.Logger.LogInformation("FFmpeg: {Ffmpeg} | QP: {Qp} | VAAPI 设备: {Dev}", ffmpegPath, qp, vaapiDevice);
 app.Logger.LogInformation("产物目录 : {Scratch} | 远程模式 : {Mode} | 空闲清理 : {Idle} | 自签 TLS : {Tls}",
     scratchRoot, remoteStream ? "stream 直连" : "cache 缓存", idleMin > 0 ? idleMin + " 分钟" : "关闭", insecureTls);
+app.Logger.LogInformation("档位 : {Count} 档 [{Ids}]，默认 {Def}（按 UA 识别，?tier= 可强制；详见 TIERS.md）",
+    registry.Tiers.Count, string.Join("/", registry.Tiers.Select(t => t.Id)), registry.Default.Id);
 
 app.UseStaticFiles(); // wwwroot/hls.min.js
 
-// 唯一入口：/{*route}，形如：
-//   source=movies/demo.mp4                      （本地相对路径）
-//   source=http://host/videos/demo.mp4          （远程 http(s) URL，自动下载到缓存再转码）
-// 虚拟文件挂在同一 URL 树下：.../index.m3u8、.../init.mp4、.../seg-*.m4s、
-//   .../status.json、.../file.mp4（fMP4 拼接直出，老设备兜底）
-app.MapGet("/{*route}", async (string? route, HttpContext http) =>
+// 唯一入口：/{*route}
+//   source=movies/demo.mp4              本地相对路径
+//   source=http://host/videos/demo.mp4  远程 http(s) URL（stream 直连 / cache 缓存后转码）
+// 档位：?tier=low|mid|high 显式指定；缺省按浏览器 UA 识别（KaiOS→低 / X100s、桌面→高 / 其余→中）
+// 虚拟文件：.../index.m3u8、.../init.mp4、.../seg-*.m4s、.../status.json、.../file.mp4（老设备兜底）
+app.MapGet("/{*route}", (string? route, HttpContext http) =>
 {
     if (string.IsNullOrEmpty(route) || !route.StartsWith("source=", StringComparison.Ordinal))
     {
-http.Response.StatusCode = 404;
+        http.Response.StatusCode = 404;
         return Results.Text(
             PlayerHtml.Error("404", "用法：/source=<相对媒体根目录的视频路径 或 http(s)://远程视频URL>，例如 /source=movies/demo.mp4"),
             "text/html; charset=utf-8");
@@ -80,8 +84,24 @@ http.Response.StatusCode = 404;
         return Results.Text(PlayerHtml.Error("404", "source 为空"), "text/html; charset=utf-8");
     }
 
-    // query（如 ?token=xxx）在 ASP.NET 路由里不进 route 值，需拼回远程 URL
-    var src = SourceResolver.Resolve(rest, http.Request.QueryString.Value ?? "", mediaRoot, scratchRoot, remoteStream);
+    // ---- 档位解析：?tier= 显式优先，否则按 UA（媒体 URL 的 tier 由播放页/playlist 显式携带）----
+    string? tierParam = http.Request.Query.TryGetValue("tier", out var tv) && tv.Count > 0 ? tv.ToString() : null;
+    var tier = registry.Parse(tierParam) ?? registry.FromUserAgent(http.Request.Headers.UserAgent.ToString());
+
+    // ---- 源 query 重建：把 tier 参数从 query 剥离，其余（token 等）完整保留给远程源 URL ----
+    string rawQuery = http.Request.QueryString.Value ?? "";
+    string remoteQuery = rawQuery;
+    if (tierParam is not null && rawQuery.Length > 0)
+    {
+        var m = RoutePatterns.TierQuery().Match(rawQuery);
+        if (m.Success)
+        {
+            remoteQuery = rawQuery.Remove(m.Index, m.Length);
+            if (remoteQuery.StartsWith('&')) remoteQuery = "?" + remoteQuery[1..];
+        }
+    }
+
+    var src = SourceResolver.Resolve(rest, remoteQuery, mediaRoot, scratchRoot, remoteStream, tier);
 
     if (!src.IsRemote)
     {
@@ -107,18 +127,22 @@ http.Response.StatusCode = 404;
     switch (vfile)
     {
         // 播放页：/source=xxx.mp4 —— vfile 为 null 表示尾段不是虚拟文件
-        // （重构后 vfile 只会是 null 或虚拟文件名，写 case "" 永远匹配不到，曾导致播放页 404）
         case null:
         {
-            var job = manager.GetOrStart(src);
-            return Results.Text(PlayerHtml.Player(src.DisplayName, job.Mode, qp, job.IsRemote, job.Res),
+            var job = manager.GetOrStart(src, tier);
+            // 徽章 QP 用本档生效值（档位可覆盖全局）
+            int pageQp = job.EffQp > 0 ? job.EffQp : qp;
+            return Results.Text(
+                PlayerHtml.Player(src.DisplayName, job.Mode, pageQp, job.IsRemote, job.Res,
+                    tier.Id, tier.Label,
+                    PlayerHtml.TierLinks(registry.Tiers, http.Request.Path.Value ?? "/", remoteQuery, tier.Id)),
                 "text/html; charset=utf-8");
         }
 
         // 转码状态：/source=xxx.mp4/status.json
         case "status.json":
         {
-            var st = manager.GetOrStart(src).Snapshot();
+            var st = manager.GetOrStart(src, tier).Snapshot();
             http.Response.Headers.CacheControl = "no-store";
             // AOT：必须显式传 JsonTypeInfo，不能用默认重载
             return Results.Json(st, AppJson.Default.StatusDto);
@@ -127,7 +151,7 @@ http.Response.StatusCode = 404;
         // 老设备兜底（Lumia Edge 等无 HLS/MSE）：fMP4 拼接直出，原生 video 标签渐进式播放
         case "file.mp4":
         {
-            var job = manager.GetOrStart(src);
+            var job = manager.GetOrStart(src, tier);
 
             // 完成态：物理拼接产物（Content-Length + Range 已知，任意 seek）
             if (File.Exists(Path.Combine(job.OutDir, ".done")))
@@ -161,7 +185,7 @@ http.Response.StatusCode = 404;
             if (vfile is not ("index.m3u8" or "init.mp4") && !RoutePatterns.SegFile().IsMatch(vfile))
                 return Results.NotFound();
 
-            var job = manager.GetOrStart(src);
+            var job = manager.GetOrStart(src, tier);
             string path = Path.Combine(job.OutDir, vfile);
             if (!File.Exists(path)) return Results.NotFound();
 
@@ -169,10 +193,37 @@ http.Response.StatusCode = 404;
             {
                 // playlist 在转码完成前会持续增长，必须禁缓存
                 http.Response.Headers.CacheControl = "no-store";
-                return Results.File(path, "application/vnd.apple.mpegurl");
+
+                // 关键：playlist 里的分片/MAP URI 是相对名，HLS 客户端相对解析会丢 query
+                // → 把当前 query（tier + token）拼到每个 URI 上，
+                //   保证分片请求路由回同一源、同一档位（含 token 的鉴权源）
+                string text = File.ReadAllText(path);
+                if (rawQuery.Length > 0)
+                {
+                    var sb = new StringBuilder();
+                    foreach (var rawLine in text.Split('\n'))
+                    {
+                        string l = rawLine.TrimEnd('\r');
+                        if (l.Length > 0)
+                        {
+                            if (l.StartsWith('#'))
+                            {
+                                if (l.StartsWith("#EXT-X-MAP", StringComparison.Ordinal))
+                                    l = l.Replace("URI=\"init.mp4\"", "URI=\"init.mp4" + rawQuery + "\"");
+                            }
+                            else
+                            {
+                                l += rawQuery; // seg-XXXXX.m4s?tier=..&token=..
+                            }
+                        }
+                        sb.Append(l).Append('\n');
+                    }
+                    text = sb.ToString();
+                }
+                return Results.Text(text, "application/vnd.apple.mpegurl");
             }
 
-            // 同名分片在重转码（指纹变化）后内容会变，immutable 会把旧 4K60 产物钉死在手机缓存里
+            // 同名分片在重转码（指纹变化）后内容会变，immutable 会把旧产物钉死在手机缓存里
             // → 一律 no-store；内网带宽充足，牺牲跨会话缓存换正确性
             http.Response.Headers.CacheControl = "no-store";
             return Results.File(path,
@@ -195,4 +246,7 @@ internal static partial class RoutePatterns
 {
     [GeneratedRegex(@"^seg-\d+\.m4s$")]
     public static partial Regex SegFile();
+
+    [GeneratedRegex(@"[?&]tier=[^&]*")]
+    public static partial Regex TierQuery();
 }

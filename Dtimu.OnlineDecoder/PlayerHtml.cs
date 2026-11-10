@@ -1,16 +1,34 @@
 using System.Net;
+using System.Text;
 
 namespace Dtimu.OnlineDecoder;
 
 internal static class PlayerHtml
 {
-    public static string Player(string name, string mode, int qp, bool remote, string res) =>
+    public static string Player(string name, string mode, int qp, bool remote, string res,
+        string tierId, string tierLabel, string tierLinks) =>
         Base.Replace("__NAME__", WebUtility.HtmlEncode(name))
             .Replace("__MODE__", ModeLabel(mode, qp, remote))
             .Replace("__RESHIDDEN__", string.IsNullOrEmpty(res) ? " hidden" : "")
             .Replace("__RES__", WebUtility.HtmlEncode(res))
             .Replace("__REMOTE__", remote ? "true" : "false")
+            .Replace("__TIER__", WebUtility.HtmlEncode(tierId))
+            .Replace("__TIERLABEL__", WebUtility.HtmlEncode(tierLabel))
+            .Replace("__TIERLINKS__", tierLinks)
             .Replace("__QP__", qp.ToString());
+
+    /// <summary>头部档位切换链接（遍历注册表生效档位；保留原 query 中的 token 等参数，仅替换 tier）。</summary>
+    internal static string TierLinks(IReadOnlyList<TierSpec> tiers, string path, string queryWithoutTier, string currentId)
+    {
+        var sb = new StringBuilder();
+        foreach (var t in tiers)
+        {
+            string href = path + (queryWithoutTier.Length > 0 ? queryWithoutTier + "&" : "?") + "tier=" + t.Id;
+            sb.Append("<a class=\"tl").Append(t.Id == currentId ? " cur" : string.Empty)
+              .Append("\" href=\"").Append(href).Append("\">").Append(t.Short).Append("</a>");
+        }
+        return sb.ToString();
+    }
 
     public static string Error(string code, string msg) =>
         Err.Replace("__CODE__", WebUtility.HtmlEncode(code))
@@ -41,9 +59,12 @@ internal static class PlayerHtml
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
 body{background:#0e1116;color:#dfe5ec;font:15px/1.5 system-ui,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;display:flex;flex-direction:column}
-header{padding:12px 16px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #1d2430}
-header .name{font-weight:600;font-size:15px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+header{padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #1d2430}
+header .name{font-weight:600;font-size:15px;flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .badge{flex-shrink:0;font-size:12px;padding:3px 10px;border-radius:999px;background:#12314f;color:#7ec3ff;border:1px solid #1c4a77}
+.tiers{display:flex;gap:6px;flex-shrink:0}
+.tl{font-size:12px;color:#7ec3ff;text-decoration:none;padding:2px 9px;border-radius:999px;border:1px solid #1c4a77}
+.tl.cur{background:#1c4a77;color:#cfe9ff}
 #status{padding:10px 16px;font-size:13px;color:#9fb0c3;border-bottom:1px solid #1d2430;display:flex;gap:12px;align-items:center}
 #pbar{flex:1;height:6px;border-radius:3px;background:#1d2430;overflow:hidden}
 #pfill{height:100%;width:0;background:linear-gradient(90deg,#2d8cff,#6adb8f);transition:width .6s}
@@ -53,21 +74,36 @@ footer{padding:8px 16px;font-size:12px;color:#5c6b7d;border-top:1px solid #1d243
 </style>
 </head>
 <body>
-<header><div class="name" id="name">__NAME__</div><div class="badge" id="mode">__MODE__</div><div class="badge" id="res"__RESHIDDEN__>__RES__</div></header>
+<header>
+  <div class="name" id="name">__NAME__</div>
+  <div class="badge" id="mode">__MODE__</div>
+  <div class="badge" id="res"__RESHIDDEN__>__RES__</div>
+  <div class="badge">档 __TIERLABEL__</div>
+  <div class="tiers">__TIERLINKS__</div>
+</header>
 <div id="status"><span id="st">正在分析…</span><div id="pbar"><div id="pfill"></div></div><span id="pct">0%</span></div>
 <video id="v" controls playsinline preload="metadata"></video>
 <div id="err" hidden></div>
-<footer>Dtimu.OnlineDecoder · VAAPI CQP __QP__ · 6s fMP4 分片</footer>
+<footer>Dtimu.OnlineDecoder · VAAPI CQP __QP__ · 6s fMP4 分片 · 档位 __TIERLABEL__</footer>
 <script src="/hls.min.js"></script>
 <script>
 (function(){
   var base = location.pathname;
-  var qp = __QP__, remote = __REMOTE__;
+  var qp = __QP__, remote = __REMOTE__, tier = '__TIER__';
   var v = document.getElementById('v'), st = document.getElementById('st'),
       pct = document.getElementById('pct'), fill = document.getElementById('pfill'),
       err = document.getElementById('err'), modeB = document.getElementById('mode'),
       resB = document.getElementById('res');
   var started = false, timer = null, flatMode = false;
+
+  // 所有媒体请求都显式带 tier（保留 token 等原有 query）；
+  // 注意：m3u8 内的分片 URI 由服务端重写时拼回完整 query，无需 JS 参与
+  function tierQs(){
+    var s = location.search.replace(/[?&]tier=[^&]*/g, '');
+    if (s.charAt(0) === '&') s = '?' + s.substring(1);
+    if (s === '?') s = '';
+    return (s ? s + '&' : '?') + 'tier=' + tier;
+  }
 
   function modeLabel(m, remote){
     var t = m === 'remux' ? '兼容直通 · 无损重封装'
@@ -86,20 +122,20 @@ footer{padding:8px 16px;font-size:12px;color:#5c6b7d;border-top:1px solid #1d243
   function start(){
     started = true;
     // ① iPhone Safari：原生 HLS
-    if (v.canPlayType('application/vnd.apple.mpegurl')) { v.src = base + '/index.m3u8'; return; }
+    if (v.canPlayType('application/vnd.apple.mpegurl')) { v.src = base + '/index.m3u8' + tierQs(); return; }
     // ② Chrome / Edge（有 MSE）：hls.js
     if (window.Hls && Hls.isSupported()) {
       var hls = new Hls({ liveSyncDurationCount: 2, maxBufferLength: 30 });
-      hls.loadSource(base + '/index.m3u8');
+      hls.loadSource(base + '/index.m3u8' + tierQs());
       hls.attachMedia(v);
       hls.on(Hls.Events.ERROR, function(_, d){
         if (d.fatal) { err.hidden = false; err.textContent = '播放错误：' + d.details; }
       });
       return;
     }
-    // ③ 老设备兑底（Lumia Edge 等无 MSE）：fMP4 拼接直出，原生 video 渐进式播放
+    // ③ 老设备兜底（Lumia Edge 等无 MSE）：fMP4 拼接直出，原生 video 渐进式播放
     flatMode = true;
-    v.src = base + '/file.mp4';
+    v.src = base + '/file.mp4' + tierQs();
     safePlay();
   }
 
@@ -118,7 +154,7 @@ footer{padding:8px 16px;font-size:12px;color:#5c6b7d;border-top:1px solid #1d243
   function waitForDone(pos){
     st.textContent = '已播到当前转码进度，转码完成后自动续播…';
     setTimeout(function(){
-      fetch(base + '/status.json', { cache: 'no-store' })
+      fetch(base + '/status.json' + tierQs(), { cache: 'no-store' })
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(s){
           if (s && s.state === 'done') {
@@ -127,7 +163,7 @@ footer{padding:8px 16px;font-size:12px;color:#5c6b7d;border-top:1px solid #1d243
               v.currentTime = pos;
               safePlay();
             });
-            v.src = base + '/file.mp4';
+            v.src = base + '/file.mp4' + tierQs();
             v.load();
           } else if (s && s.state === 'failed') {
             st.textContent = '转码失败';
@@ -140,7 +176,7 @@ footer{padding:8px 16px;font-size:12px;color:#5c6b7d;border-top:1px solid #1d243
   }
 
   function tick(){
-    fetch(base + '/status.json', { cache: 'no-store' })
+    fetch(base + '/status.json' + tierQs(), { cache: 'no-store' })
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(s){
         if (!s) return;

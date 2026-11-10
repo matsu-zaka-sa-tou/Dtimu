@@ -11,7 +11,8 @@ internal sealed record StatusDto(
     string State,
     string Phase,        // download | transcode
     string Mode,
-    string Res,          // 分辨率（降级时如 "4096x2048 → 1920x960"）
+    string Tier,         // 档位 id：low | mid | high
+    string Res,          // 分辨率（降级时如 "4096x2048 → 1920x960@30fps"）
     double Progress,     // 转码进度 0-1
     double DoneSec,
     double TotalSec,
@@ -22,15 +23,17 @@ internal sealed record StatusDto(
     bool PlaylistReady,
     string? Error);
 
-internal sealed class Job(string key, string outDir, string inputFile, bool isRemote, string? remoteUrl, string? downloadFile)
+internal sealed class Job(string key, string outDir, string inputFile, bool isRemote, string? remoteUrl, string? downloadFile, string tierId)
 {
     public readonly object Sync = new();
-    public string Key = key;                 // 字典键：本地=绝对路径；远程=完整 URL
-    public string OutDir = outDir;            // 输出目录 = 输入文件 + ".hls"
-    public string InputFile = inputFile;      // ffmpeg 输入（远程=下载缓存文件）
+    public string Key = key;                 // 字典键：源 + "|" + 档位 id
+    public string OutDir = outDir;            // 输出目录 = scratch/hls/<hash(源+档位)>
+    public string InputFile = inputFile;      // ffmpeg 输入（远程=下载缓存文件或 URL）
     public bool IsRemote = isRemote;
     public string? RemoteUrl = remoteUrl;
     public string? DownloadFile = downloadFile;
+    public string TierId = tierId;
+    public int EffQp;                          // 本档生效 QP（tier.Qp ?? 全局 QP），页面徽章用
     public CancellationTokenSource? Cancel;
 
     public JobState State;
@@ -64,6 +67,7 @@ internal sealed class Job(string key, string outDir, string inputFile, bool isRe
                 },
                 Phase,
                 Mode,
+                TierId,
                 Res,
                 TotalSec > 0 ? Math.Clamp(DoneSec / TotalSec, 0, 1) : 0,
                 DoneSec,
@@ -79,13 +83,14 @@ internal sealed class Job(string key, string outDir, string inputFile, bool isRe
 }
 
 /// <summary>
-/// 转码任务管理：每个源一个 Job（产物目录 = scratch/hls/&lt;源哈希&gt;，与媒体目录解耦），
+/// 转码任务管理：每个「源 × 档位」一个 Job（产物目录 = scratch/hls/&lt;源+档位哈希&gt;，与媒体目录解耦），
 /// 远程源 stream 模式直接把 URL 交给 ffmpeg（零落盘），cache 模式先下载到 scratch/dl，
-/// 转码阶段 ffmpeg 渐进式写 HLS（边转边播），退出码 0 落 .done，服务重启后直接复用产物；
+/// 转码阶段 ffmpeg 渐进式写 HLS（边转边播），退出码 0 落 .done（含参数指纹），服务重启后直接复用产物；
 /// 空闲超时自动删除产物（idleMinutes&gt;0），配合 tmpfs scratch 实现零磁盘占用。
 /// </summary>
 internal sealed class TranscodeManager(
-    string ffmpegPath, string vaapiDevice, int qp, ProbeService probe, bool insecureTls, int idleMinutes)
+    string ffmpegPath, string vaapiDevice, int qp, ProbeService probe, bool insecureTls, int idleMinutes,
+    TierRegistry registry)
 {
     private const int MaxAttempts = 3;
     private static readonly TimeSpan RetryCooldown = TimeSpan.FromSeconds(15);
@@ -93,11 +98,11 @@ internal sealed class TranscodeManager(
     private readonly ConcurrentDictionary<string, Job> _jobs = new(StringComparer.Ordinal);
     private readonly CancellationTokenSource _life = new();
 
-    public Job GetOrStart(SourceResolver.Resolved src)
+    public Job GetOrStart(SourceResolver.Resolved src, TierSpec tier)
     {
-        var job = _jobs.GetOrAdd(src.SourceKey, key =>
+        var job = _jobs.GetOrAdd(src.SourceKey + "|" + tier.Id, key =>
             new Job(key, src.OutDir, src.FfmpegInput, src.IsRemote,
-                src.IsRemote ? src.SourceKey : null, src.DownloadFile));
+                src.IsRemote ? src.SourceKey : null, src.DownloadFile, tier.Id));
 
         lock (job.Sync)
         {
@@ -226,12 +231,20 @@ internal sealed class TranscodeManager(
                 : "ffprobe 无法解析该文件（文件不存在 / 损坏 / 不是媒体文件）";
             return;
         }
-        job.Mode = info.Mode;
+        var spec = registry.Get(job.TierId);
+        var plan = spec.Plan(info);
+        int effQp = spec.Qp ?? qp;                 // 档位可覆盖全局 QP（null = 继承 DTIMU_QP）
+        int audioKbps = spec.AudioKbps ?? 256;     // 档位可覆盖音频码率
+        job.Mode = plan.Mode;
+        job.EffQp = effQp;
         job.TotalSec = info.DurationSec;
+        bool fpsCapped = info.FrameRate > 0 && info.FrameRate > plan.CapFps + 0.01;
         job.Res = info.Width > 0
-            ? $"{info.Width}x{info.Height}" + (info.Downscale ? $" → {info.TargetWidth}x{info.TargetHeight}" : "")
+            ? $"{info.Width}x{info.Height}"
+              + (plan.Downscale ? $" → {plan.TargetWidth}x{plan.TargetHeight}" : "")
+              + (fpsCapped && plan.Mode is Modes.Transcode or Modes.TranscodeSw ? $"@{plan.CapFps:0}fps" : "")
             : "";
-        job.Fingerprint = Fingerprint(info);
+        job.Fingerprint = Fingerprint(plan, spec, effQp, audioKbps);
 
         try { Directory.CreateDirectory(job.OutDir); }
         catch (Exception ex)
@@ -268,7 +281,7 @@ internal sealed class TranscodeManager(
             RedirectStandardOutput = true, // -progress pipe:1
             RedirectStandardError = true,
         };
-        foreach (var a in BuildArgs(info, job.InputFile, job.OutDir)) psi.ArgumentList.Add(a);
+        foreach (var a in BuildArgs(info, plan, effQp, audioKbps, job.InputFile, job.OutDir)) psi.ArgumentList.Add(a);
 
         Process? proc;
         try { proc = Process.Start(psi); }
@@ -426,13 +439,16 @@ internal sealed class TranscodeManager(
         }
     }
 
-    /// <summary>转码参数指纹：remux 类仅看模式；转码类含 QP 与目标尺寸（改参数自动作废旧产物）。</summary>
-    private string Fingerprint(MediaInfo info) =>
-        info.Mode + "|" + (info.Mode is Modes.Transcode or Modes.TranscodeSw
-            ? qp + "|" + (info.Downscale ? $"{info.TargetWidth}x{info.TargetHeight}" : "-")
+    /// <summary>转码参数指纹：模式+档位+生效QP+音频码率+目标尺寸+帧率上限（任一变化自动作废旧产物）。</summary>
+    private string Fingerprint(TranscodePlan plan, TierSpec spec, int effQp, int audioKbps) =>
+        plan.Mode + "|" + spec.Id + "|"
+        + (plan.Mode is Modes.Transcode or Modes.TranscodeSw
+            ? effQp + "|" + audioKbps + "|"
+              + (plan.Downscale ? $"{plan.TargetWidth}x{plan.TargetHeight}" : "-") + "|"
+              + plan.CapFps.ToString("0", CultureInfo.InvariantCulture)
             : "-");
 
-    private string[] BuildArgs(MediaInfo info, string input, string outDir)
+    private string[] BuildArgs(MediaInfo info, TranscodePlan plan, int effQp, int audioKbps, string input, string outDir)
     {
         var a = new List<string>
         {
@@ -441,12 +457,12 @@ internal sealed class TranscodeManager(
             "-y",
         };
 
-        if (info.Mode == Modes.Transcode)
+        if (plan.Mode == Modes.Transcode)
         {
             // VAAPI 硬解：解码结果直接留在 GPU 显存
             a.AddRange(["-hwaccel", "vaapi", "-hwaccel_device", vaapiDevice, "-hwaccel_output_format", "vaapi"]);
         }
-        else if (info.Mode == Modes.TranscodeSw)
+        else if (plan.Mode == Modes.TranscodeSw)
         {
             // 软解链：全局指定 VAAPI 设备供 hwupload 使用
             a.AddRange(["-vaapi_device", vaapiDevice]);
@@ -458,23 +474,26 @@ internal sealed class TranscodeManager(
 
         a.AddRange(["-i", input]);
 
-        if (info.Mode == Modes.Transcode)
-            a.AddRange(["-vf", info.Downscale
-                ? $"scale_vaapi=w={info.TargetWidth}:h={info.TargetHeight}:format=nv12"  // 4K/高帧率 → ≤1080p60（L4.2）
+        if (plan.Mode == Modes.Transcode)
+            a.AddRange(["-vf", plan.Downscale
+                ? $"scale_vaapi=w={plan.TargetWidth}:h={plan.TargetHeight}:format=nv12"  // 超档源 → 档位内（保比例）
                 : "scale_vaapi=format=nv12"]);                                          // 10bit P010 → 8bit NV12
-        else if (info.Mode == Modes.TranscodeSw)
-            a.AddRange(["-vf", info.Downscale
-                ? $"scale=w={info.TargetWidth}:h={info.TargetHeight},format=nv12,hwupload"
+        else if (plan.Mode == Modes.TranscodeSw)
+            a.AddRange(["-vf", plan.Downscale
+                ? $"scale=w={plan.TargetWidth}:h={plan.TargetHeight},format=nv12,hwupload"
                 : "scale=format=nv12,hwupload"]);                                       // CPU 转 NV12 后上载 GPU
 
-        if (info.Mode is Modes.Transcode or Modes.TranscodeSw)
+        if (plan.Mode is Modes.Transcode or Modes.TranscodeSw)
         {
-            // 保画质核心：固定 QP（视觉无损区间），帧率不动，分辨率不动
+            // 保画质核心：固定 QP（视觉无损区间；档位可覆盖），分辨率按档位上限，帧率仅超档时才降
             a.AddRange(["-c:v", "h264_vaapi",
                         "-rc_mode", "CQP",
-                        "-qp", qp.ToString(),
+                        "-qp", effQp.ToString(),
                         "-profile:v", "high",
                         "-g", "120"]);
+            // 档位帧率上限（低档 30 / 高档 4K 限 30）：源帧率超线时显式降帧
+            if (info.FrameRate > 0 && info.FrameRate > plan.CapFps + 0.01)
+                a.AddRange(["-r", plan.CapFps.ToString("0", CultureInfo.InvariantCulture)]);
         }
         else
         {
@@ -483,7 +502,7 @@ internal sealed class TranscodeManager(
 
         a.AddRange(["-map", "0:v:0", "-map", "0:a:0?", "-sn", "-dn"]);
 
-        if (info.Mode == Modes.Remux)
+        if (plan.Mode == Modes.Remux)
             a.AddRange(["-c:a", "copy"]);
         else
             a.AddRange(["-c:a", "aac", "-b:a", "256k"]);
