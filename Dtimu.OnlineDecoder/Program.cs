@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -29,6 +31,12 @@ bool insecureTls = Cfg("DTIMU_INSECURE_TLS", "0") == "1";
 bool remoteStream = !string.Equals(Cfg("DTIMU_REMOTE_MODE", "stream"), "cache", StringComparison.OrdinalIgnoreCase);
 // 空闲清理：转码完成且无人访问超过 N 分钟 → 删除产物释放空间；0=永久保留
 int idleMin = int.TryParse(Cfg("DTIMU_IDLE_DELETE_MIN", "0"), out var im) ? Math.Max(0, im) : 0;
+// CORS：放行内网来源页面跨域引用（hls.js 拉流 / fetch 状态接口）；默认 192.168.0.0/16，可改 CIDR 列表 / 加精确 Origin 白名单；0=关闭
+bool corsEnabled = Cfg("DTIMU_CORS", "1") == "1";
+string[] corsCidrs = Cfg("DTIMU_CORS_CIDRS", "192.168.0.0/16")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+string[] corsExtraOrigins = Cfg("DTIMU_CORS_ORIGINS", "")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 var probe = new ProbeService(Cfg("DTIMU_FFPROBE", "ffprobe"));
 // 档位系统：TierSpec 纯数据 + TierPresets 库预设 + TierRegistry 生效集合/默认档/UA 路由（见 TIERS.md）
@@ -44,6 +52,50 @@ app.Logger.LogInformation("产物目录 : {Scratch} | 远程模式 : {Mode} | �
     scratchRoot, remoteStream ? "stream 直连" : "cache 缓存", idleMin > 0 ? idleMin + " 分钟" : "关闭", insecureTls);
 app.Logger.LogInformation("档位 : {Count} 档 [{Ids}]，默认 {Def}（按 UA 识别，?tier= 可强制；详见 TIERS.md）",
     registry.Tiers.Count, string.Join("/", registry.Tiers.Select(t => t.Id)), registry.Default.Id);
+app.Logger.LogInformation("CORS : {State} | 放行网段 : {Cidrs} | 额外白名单 : {Origins}",
+    corsEnabled ? "开启" : "关闭", string.Join(", ", corsCidrs),
+    corsExtraOrigins.Length > 0 ? string.Join(", ", corsExtraOrigins) : "无");
+
+// ---- CORS 中间件：仅放行内网 CIDR 来源页面的跨域引用；预检 OPTIONS 短路 204 ----
+// （catch-all 只映射 GET，预检不短路会 404；带 Origin 头才处理，同源请求不受影响）
+app.Use(async (ctx, next) =>
+{
+    if (!corsEnabled)
+    {
+        await next();
+        return;
+    }
+
+    string origin = ctx.Request.Headers.Origin.ToString();
+    if (origin.Length == 0)
+    {
+        await next();
+        return;
+    }
+
+    if (!CorsAllowed(origin, corsExtraOrigins, corsCidrs))
+    {
+        await next(); // 白名单外：不加 CORS 头，浏览器侧自行拒绝
+        return;
+    }
+
+    ctx.Response.Headers.AccessControlAllowOrigin = origin;          // 回显来源（比 * 精确，且兼容带凭据场景）
+    ctx.Response.Headers.AccessControlAllowMethods = "GET, HEAD, OPTIONS";
+    ctx.Response.Headers.AccessControlExposeHeaders = "Content-Length, Content-Range, Accept-Ranges";
+    ctx.Response.Headers.AccessControlMaxAge = "86400";
+    ctx.Response.Headers.Vary = "Origin";
+    // 预检允许头：回显请求方要求的头（* 在部分老内核上不受信任，回显最稳）
+    string reqHeaders = ctx.Request.Headers.AccessControlRequestHeaders.ToString();
+    ctx.Response.Headers.AccessControlAllowHeaders = reqHeaders.Length > 0 ? reqHeaders : "*";
+
+    if (HttpMethods.IsOptions(ctx.Request.Method))
+    {
+        ctx.Response.StatusCode = StatusCodes.Status204NoContent;
+        return; // 预检短路
+    }
+
+    await next();
+});
 
 app.UseStaticFiles(); // wwwroot/hls.min.js
 
@@ -240,6 +292,40 @@ static bool IsUnderRoot(string path, string root)
     string r = Path.TrimEndingDirectorySeparator(root);
     return string.Equals(path, r, StringComparison.OrdinalIgnoreCase)
         || path.StartsWith(r + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+}
+
+/// <summary>Origin 跨域放行判定：host 为配置网段内的 IPv4，或命中精确 Origin 白名单。</summary>
+static bool CorsAllowed(string origin, string[] extraOrigins, string[] cidrs)
+{
+    foreach (var e in extraOrigins)
+        if (string.Equals(e, origin, StringComparison.OrdinalIgnoreCase)) return true;
+
+    if (!Uri.TryCreate(origin, UriKind.Absolute, out var u)) return false;
+    // IPv6 字面量 Host 带方括号，统一剥掉；域名来源不做 IP 网段判定，走显式白名单
+    if (!IPAddress.TryParse(u.Host.Trim('[', ']'), out var ip)) return false;
+    if (ip.AddressFamily != AddressFamily.InterNetwork) return false;
+
+    byte[] b = ip.GetAddressBytes();
+    foreach (var c in cidrs)
+    {
+        var parts = c.Split('/');
+        if (parts.Length != 2
+            || !IPAddress.TryParse(parts[0], out var net)
+            || net.AddressFamily != AddressFamily.InterNetwork
+            || !int.TryParse(parts[1], out int prefix) || prefix is < 0 or > 32) continue;
+
+        byte[] nb = net.GetAddressBytes();
+        int full = prefix / 8, rem = prefix % 8;
+        bool ok = true;
+        for (int i = 0; i < full && ok; i++) ok = b[i] == nb[i];
+        if (ok && rem > 0)
+        {
+            int mask = 0xFF << (8 - rem);
+            ok = (b[full] & mask) == (nb[full] & mask);
+        }
+        if (ok) return true;
+    }
+    return false;
 }
 
 internal static partial class RoutePatterns

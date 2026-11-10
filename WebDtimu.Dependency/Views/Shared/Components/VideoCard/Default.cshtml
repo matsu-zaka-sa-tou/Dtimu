@@ -1,21 +1,19 @@
 ﻿@* WebDtimu.Dependency\Views\Shared\Components\VedioCard\ *@
 
 @{
-    var guid = Guid.NewGuid().ToString("N"); 
-    
-    bool isSquareMode = ViewData["AppId431960Mode"] as bool? ?? false;
-    bool isBurned = ViewData["IsBurned"] as bool? ?? true; 
-    
-    int itemWidth  = 160;
-    int gap        = 20;
-    int imgHeight  = isSquareMode ? 160 : 90;
+    var guid = Guid.NewGuid().ToString("N");
 
-    string gridCss = $"display: grid; grid-template-columns: repeat(auto-fill, {itemWidth}px); gap: {gap}px;";
-    string cardCss = $"width: {itemWidth}px;";
-    string imgWrapperCss = $"height: {imgHeight}px;";
+    bool isSquareMode = ViewData["AppId431960Mode"] as bool? ?? false;
+    bool isBurned = ViewData["IsBurned"] as bool? ?? true;
+
+    int itemWidth = 160;
+    int imgHeight = isSquareMode ? 160 : 90;
+
+    string cardCss = "width: " + itemWidth + "px;";
+    string imgWrapperCss = "height: " + imgHeight + "px;";
 }
 <style>
-    /* ★ 核心修复：强制覆盖全局的绝对定位，让背景和内容自然撑开 */
+    /* ★ 覆盖全局绝对定位，让背景和内容自然撑开 */
     .card-base-@(guid) .card-chrome {
         position: relative !important;
         top: auto !important;
@@ -25,7 +23,7 @@
         padding-top: 10px;
         padding-bottom: 20px;
     }
-    
+
     .card-base-@(guid) .card-title {
         position: relative !important;
         top: auto !important;
@@ -41,32 +39,33 @@
         height: auto !important;
     }
 
-    /* ===== 视图切换按钮（保持在右上角） ===== */
+    /* ===== 视图切换按钮（右上角） ===== */
     .view-toolbar-@guid {
         position: absolute;
-        top: 10px; 
+        top: 10px;
         right: 20px;
-        display: flex;
-        gap: 6px;
         z-index: 10;
+        display: flex;           /* Firefox 28+ */
     }
 
     .view-btn-@guid {
         width: 32px;
         height: 28px;
         padding: 0;
+        margin-left: 6px;        /* 替代 gap */
         background: #fff;
         border: 1px solid #ccc;
         border-radius: 4px;
         cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        display: inline-block;
+        line-height: 26px;
+        text-align: center;
         font-size: 14px;
         color: #333;
-        transition: all 0.2s;
+        box-sizing: border-box;
     }
 
+    .view-btn-@(guid):first-child { margin-left: 0; }
     .view-btn-@(guid):hover { background: #f0f0f0; }
     .view-btn-@(guid).active {
         background: #3b82f6;
@@ -74,107 +73,111 @@
         border-color: #3b82f6;
     }
 
-    /* ===== 大图标模式（基础） ===== */
-    .video-grid-@guid {
-        @Html.Raw(gridCss)
+    /* ===== 大图标模式（基础，flex 布局，替代 grid） ===== */
+    .video-grid-@(guid) {
+        display: flex;
+        flex-wrap: wrap;
         margin-left: 20px;
     }
 
-    .video-card-content-@guid {
+    .video-card-content-@(guid) {
         @Html.Raw(cardCss)
-        overflow: hidden; 
-        background-color: #f0f0f0; 
+        margin: 0 20px 20px 0;   /* 替代 gap */
+        overflow: hidden;
+        background-color: #f0f0f0;
         display: flex;
         flex-direction: column;
         border-radius: 6px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        transition: transform 0.2s;
         cursor: pointer;
+        box-sizing: border-box;
     }
 
-    .video-card-content-@guid:hover { transform: translateY(-2px); }
+    .video-card-content-@(guid):hover {
+        transform: translateY(-2px);
+    }
 
-    .img-wrapper-@guid {
+    .img-wrapper-@(guid) {
         width: 100%;
         @Html.Raw(imgWrapperCss)
         overflow: hidden;
+        flex-shrink: 0;
     }
 
-    .video-card-content-@guid img {
+    .video-card-content-@(guid) img {
         width: 100% !important;
         height: 100% !important;
-        object-fit: cover; 
+        object-fit: cover;
         display: block;
     }
 
-    .title-bar-@guid {
+    .title-bar-@(guid) {
         width: 100%;
         height: 28px;
         line-height: 28px;
-        background-color: #333333; 
-        color: #ffffff;            
+        background-color: #333333;
+        color: #ffffff;
         font-size: 12px;
-        text-align: center;        
+        text-align: center;
         padding: 0 8px;
         box-sizing: border-box;
-        white-space: nowrap;       
+        white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis;   
+        text-overflow: ellipsis;
     }
 
-    /* ===== 平铺列表模式（撑满全屏） ===== */
+    /* ===== 平铺列表模式 ===== */
     .video-grid-@(guid).mode-list {
-        display: grid !important;
-        /* 最小宽度 320px，1fr 表示剩余空间平分，彻底撑满整个容器 */
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
-        gap: 15px;
-        margin: 0 20px; 
+        display: flex !important;
+        flex-wrap: wrap;
+        margin: 0 20px;
     }
 
-    .video-grid-@(guid).mode-list .video-card-content-@guid {
-        width: 100%; 
-        min-height: 86px; 
-        height: auto;     
+    .video-grid-@(guid).mode-list .video-card-content-@(guid) {
+        width: 100%;
+        flex: 1 1 100%;
+        min-height: 86px;
+        height: auto;
         display: flex;
-        flex-direction: row; 
+        flex-direction: row;
         align-items: center;
-        gap: 12px;
         padding: 10px;
+        margin: 0 0 15px 0;
         background: #f8f9fa;
         border: 1px solid #eee;
         border-radius: 6px;
         cursor: pointer;
         box-sizing: border-box;
-        transition: background 0.2s;
+        overflow: hidden;
     }
 
-    .video-grid-@(guid).mode-list .video-card-content-@guid:hover {
+    .video-grid-@(guid).mode-list .video-card-content-@(guid):hover {
         background: #f0f2f5;
     }
 
-    .video-grid-@(guid).mode-list .video-card-content-@guid img {
-        width: 100px !important;  
-        height: 64px !important; 
+    .video-grid-@(guid).mode-list .video-card-content-@(guid) img {
+        width: 100px !important;
+        height: 64px !important;
         flex-shrink: 0;
         object-fit: cover;
         border-radius: 4px;
+        margin-right: 12px;      /* 替代 gap */
     }
 
-    .item-title-@guid {
+    .item-title-@(guid) {
         font-size: 14px;
         color: #333;
-        line-height: 1.5;
-        display: -webkit-box;
-        -webkit-line-clamp: 3; /* 从 2 行增加到 3 行，显示更多字 */
-        -webkit-box-orient: vertical;
+        line-height: 21px;       /* 1.5 × 14 */
+        height: 63px;            /* 3 行固定高度，替代 -webkit-line-clamp */
         overflow: hidden;
         word-break: break-all;
         flex: 1;
+        min-width: 0;
     }
 
-    /* ===== 详细信息模式（解决挤压，撑满全屏） ===== */
+    /* ===== 详细信息模式 ===== */
     .video-grid-@(guid).mode-detail {
-        display: block !important; /* 必须干掉 grid，否则 ol 只会占一列 */
+        display: block !important;
         margin: 0 20px;
     }
 
@@ -188,6 +191,82 @@
         margin-bottom: 12px;
         border-bottom: 1px solid rgba(0,0,0,0.1);
         padding-bottom: 12px;
+    }
+
+    /* ===== 小屏适配（240 / 320 / 360 px） ===== */
+    @@media (max-width: 360px) {
+        .card-base-@(guid) .card-title {
+            margin-left: 8px;
+            font-size: 14px;
+        }
+
+        .view-toolbar-@(guid) {
+            top: 8px;
+            right: 8px;
+        }
+
+        .view-btn-@(guid) {
+            width: 26px;
+            height: 24px;
+            line-height: 22px;
+            font-size: 12px;
+            margin-left: 4px;
+        }
+
+        .video-grid-@(guid) {
+            margin-left: 8px;
+        }
+
+        /* 只在大图标模式缩小卡片，避免影响列表/详细模式 */
+        .video-grid-@(guid):not(.mode-list):not(.mode-detail) .video-card-content-@(guid) {
+            width: 120px;
+            margin: 0 8px 8px 0;
+        }
+
+        .video-grid-@(guid):not(.mode-list):not(.mode-detail) .img-wrapper-@(guid) {
+            height: 68px;
+        }
+
+        .title-bar-@(guid) {
+            height: 22px;
+            line-height: 22px;
+            font-size: 11px;
+        }
+
+        .video-grid-@(guid).mode-list {
+            margin: 0 8px;
+        }
+
+        .video-grid-@(guid).mode-list .video-card-content-@(guid) {
+            padding: 8px;
+            min-height: 70px;
+            margin-bottom: 10px;
+        }
+
+        .video-grid-@(guid).mode-list .video-card-content-@(guid) img {
+            width: 72px !important;
+            height: 46px !important;
+            margin-right: 8px;
+        }
+
+        .item-title-@(guid) {
+            font-size: 12px;
+            line-height: 18px;
+            height: 54px;
+        }
+
+        .video-grid-@(guid).mode-detail {
+            margin: 0 8px;
+        }
+
+        .video-grid-@(guid).mode-detail ol {
+            padding-left: 16px;
+            padding-right: 8px;
+        }
+
+        /* 低端设备禁动画 */
+        .video-card-content-@(guid) { transition: none; }
+        .video-card-content-@(guid):hover { transform: none; }
     }
 </style>
 
@@ -204,44 +283,96 @@
 </div>
 
 <script>
-    (() => {
-        const IS_BURNED = @(isBurned.ToString().ToLower());
-        let currentMode = 'grid';
-        let videosData = []; 
+    (function () {
+        var IS_BURNED = @(isBurned.ToString().ToLower());
+        var currentMode = 'grid';
+        var videosData = [];
 
-        async function init() {
-            const cardBase = document.getElementById('@guid');
+        function findAncestor(el, className) {
+            while (el && el.nodeType === 1) {
+                if (el.className && (' ' + el.className + ' ').indexOf(' ' + className + ' ') !== -1) {
+                    return el;
+                }
+                el = el.parentNode;
+            }
+            return null;
+        }
+
+        function getJson(url, onOk, onErr) {
+            var xhr;
+            try {
+                xhr = new XMLHttpRequest();
+            } catch (e) {
+                onErr(new Error('XMLHttpRequest 不可用'));
+                return;
+            }
+            xhr.open('GET', url, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState !== 4) return;
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    var data;
+                    try {
+                        data = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        onErr(e);
+                        return;
+                    }
+                    onOk(data);
+                } else {
+                    onErr(new Error('HTTP ' + xhr.status));
+                }
+            };
+            xhr.onerror = function () { onErr(new Error('网络错误')); };
+            xhr.send();
+        }
+
+        function makeClickHandler(vid) {
+            return function () {
+                window.location.href = '/Video/Detail/' + encodeURIComponent(vid);
+            };
+        }
+
+        function init() {
+            var cardBase = document.getElementById('@guid');
             if (!cardBase) return;
-            
-            const grid = cardBase.querySelector(".video-grid-@guid");
 
-            const toolbar = cardBase.querySelector(".view-toolbar-@guid");
-            toolbar.addEventListener("click", (e) => {
-                const btn = e.target.closest(".view-btn-@guid");
+            var grid = cardBase.querySelector('.video-grid-@guid');
+            var toolbar = cardBase.querySelector('.view-toolbar-@guid');
+
+            toolbar.addEventListener('click', function (e) {
+                var btn = findAncestor(e.target, 'view-btn-@guid');
                 if (!btn) return;
 
-                toolbar.querySelectorAll(".view-btn-@guid").forEach(b => b.classList.remove("active"));
-                btn.classList.add("active");
+                var btns = toolbar.querySelectorAll('.view-btn-@guid');
+                for (var i = 0; i < btns.length; i++) {
+                    btns[i].className = btns[i].className.replace(/\bactive\b/g, '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+                }
+                btn.className = btn.className + ' active';
 
-                currentMode = btn.dataset.mode;
-                render(); 
+                currentMode = btn.getAttribute('data-mode') || 'grid';
+                render();
             });
 
-            try {
-                const response = await fetch("/api/Lists/VideoList");
-                if (!response.ok) throw new Error("请求失败");
-                const videosDict = await response.json();
-
-                videosData = Object.entries(videosDict).map(([id, data]) => ({ id, data }));
+            getJson('/api/Lists/VideoList', function (videosDict) {
+                videosData = [];
+                for (var id in videosDict) {
+                    if (Object.prototype.hasOwnProperty.call(videosDict, id)) {
+                        videosData.push({ id: id, data: videosDict[id] });
+                    }
+                }
                 render();
-
-            } catch (err) {
-                cardBase.querySelector(".card-chrome").textContent = "加载视频失败：" + err.message;
-            }
+            }, function (err) {
+                while (grid.firstChild) grid.removeChild(grid.firstChild);
+                var errDiv = document.createElement('div');
+                errDiv.style.color = '#c00';
+                errDiv.style.padding = '10px 20px';
+                errDiv.textContent = '加载视频失败：' + (err && err.message ? err.message : err);
+                grid.appendChild(errDiv);
+            });
 
             function render() {
-                grid.className = "video-grid-@guid " + (currentMode === 'grid' ? '' : 'mode-' + currentMode);
-                grid.innerHTML = ""; 
+                grid.className = 'video-grid-@guid' + (currentMode === 'grid' ? '' : ' mode-' + currentMode);
+                while (grid.firstChild) grid.removeChild(grid.firstChild);
 
                 if (currentMode === 'detail') {
                     renderDetail(grid);
@@ -251,82 +382,102 @@
             }
 
             function renderCards(container) {
-                videosData.forEach(({ id, data }) => {
-                    const div = document.createElement("div");
-                    div.className = "video-card-content-@guid";
-                    div.onclick = () => { window.location.href = "/Video/Detail/" + encodeURIComponent(id); };
+                for (var i = 0; i < videosData.length; i++) {
+                    var item = videosData[i];
+                    var id = item.id;
+                    var data = item.data;
 
-                    const sources = [];
+                    var div = document.createElement('div');
+                    div.className = 'video-card-content-@guid';
+                    div.onclick = makeClickHandler(id);
+
+                    var sources = [];
                     if (!IS_BURNED) {
-                        if (id) sources.push(`/api/AppId431960Mode?id=${encodeURIComponent(id)}`);
+                        if (id) sources.push('/api/AppId431960Mode?id=' + encodeURIComponent(id));
                     } else {
                         if (data.gallery && data.gallery.length > 0) {
-                            data.gallery.forEach(b64 => sources.push("data:image/png;base64," + b64));
+                            for (var g = 0; g < data.gallery.length; g++) {
+                                sources.push('data:image/png;base64,' + data.gallery[g]);
+                            }
                         }
                     }
-                    if (sources.length === 0) sources.push("/images/default-cover.png");
+                    if (sources.length === 0) sources.push('/images/default-cover.png');
 
-                    const img = document.createElement("img");
+                    var img = document.createElement('img');
                     img.src = sources[0];
-                    img.alt = data.title || "视频";
-                    img.onerror = () => { img.onerror = null; img.src = "/images/default-cover.png"; };
-                    
+                    img.alt = data.title || '视频';
+                    img.onerror = function () {
+                        this.onerror = null;
+                        this.src = '/images/default-cover.png';
+                    };
+
+                    var titleText = data.title || '未命名视频';
+
                     if (currentMode === 'list') {
                         div.appendChild(img);
-                        const title = document.createElement("div");
-                        title.className = "item-title-@guid"; 
-                        title.textContent = data.title || "未命名视频";
-                        title.title = data.title || "未命名视频"; // 悬浮显示全部文字
+
+                        var title = document.createElement('div');
+                        title.className = 'item-title-@guid';
+                        title.textContent = titleText;
+                        title.title = titleText;
                         div.appendChild(title);
                     } else {
-                        const imgWrapper = document.createElement("div");
-                        imgWrapper.className = "img-wrapper-@guid";
+                        var imgWrapper = document.createElement('div');
+                        imgWrapper.className = 'img-wrapper-@guid';
                         imgWrapper.appendChild(img);
                         div.appendChild(imgWrapper);
 
-                        const titleBar = document.createElement("div");
-                        titleBar.className = "title-bar-@guid";
-                        titleBar.textContent = data.title || "未命名视频";
-                        titleBar.title = data.title || "未命名视频"; 
+                        var titleBar = document.createElement('div');
+                        titleBar.className = 'title-bar-@guid';
+                        titleBar.textContent = titleText;
+                        titleBar.title = titleText;
                         div.appendChild(titleBar);
                     }
 
                     container.appendChild(div);
-                });
+                }
             }
 
             function renderDetail(container) {
-                const ol = document.createElement("ol");
-                // 样式交给 CSS 的 .mode-detail ol 处理
-                
-                videosData.forEach(({ id, data }) => {
-                    const li = document.createElement("li");
-                    
-                    const a = document.createElement("a");
-                    a.href = "/Video/Detail/" + encodeURIComponent(id);
-                    a.style.color = "#1a73e8";
-                    a.style.textDecoration = "none";
-                    a.style.fontSize = "15px";
-                    a.style.fontWeight = "bold";
-                    a.textContent = data.title || "未命名视频";
+                var ol = document.createElement('ol');
+
+                for (var i = 0; i < videosData.length; i++) {
+                    var item = videosData[i];
+                    var id = item.id;
+                    var data = item.data;
+
+                    var li = document.createElement('li');
+
+                    var a = document.createElement('a');
+                    a.href = '/Video/Detail/' + encodeURIComponent(id);
+                    a.style.color = '#1a73e8';
+                    a.style.textDecoration = 'none';
+                    a.style.fontSize = '15px';
+                    a.style.fontWeight = 'bold';
+                    a.textContent = data.title || '未命名视频';
                     li.appendChild(a);
 
-                    const meta = document.createElement("div");
-                    meta.style.fontSize = "13px";
-                    meta.style.color = "#666";
-                    meta.style.marginTop = "6px";
-                    
-                    let metaText = `ID: ${id} | 作者: ${data.author || '未知'}`;
-                    if (data.duration) metaText += ` | 时长: ${data.duration.split('.')[0]}`;
-                    if (data.tags) metaText += ` | 标签: ${data.tags.join(', ')}`;
-                    
+                    var meta = document.createElement('div');
+                    meta.style.fontSize = '13px';
+                    meta.style.color = '#666';
+                    meta.style.marginTop = '6px';
+
+                    var metaText = 'ID: ' + id + ' | 作者: ' + (data.author || '未知');
+                    if (data.duration && typeof data.duration === 'string') {
+                        metaText += ' | 时长: ' + data.duration.split('.')[0];
+                    }
+                    if (data.tags && data.tags.join) {
+                        metaText += ' | 标签: ' + data.tags.join(', ');
+                    }
+
                     meta.textContent = metaText;
                     li.appendChild(meta);
                     ol.appendChild(li);
-                });
+                }
                 container.appendChild(ol);
             }
         }
+
         init();
     })();
 </script>

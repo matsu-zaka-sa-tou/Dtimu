@@ -18,4 +18,10 @@
     <ProjectReference Include="..\WebDtimu.Dependency\WebDtimu.Dependency.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Make-IncrementalPackage.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

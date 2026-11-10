@@ -17,6 +17,10 @@ Environment=DTIMU_INSECURE_TLS=1
 Environment=DTIMU_SCRATCH_ROOT=/dev/shm/dtimu
 Environment=DTIMU_REMOTE_MODE=stream
 Environment=DTIMU_IDLE_DELETE_MIN=15
+# CORS：放行内网页面跨域引用 m3u8/fetch（默认已开启 + 192.168.0.0/16，下面仅为调参示例）
+# Environment=DTIMU_CORS=1
+# Environment=DTIMU_CORS_CIDRS=192.168.0.0/16,10.0.0.0/8
+# Environment=DTIMU_CORS_ORIGINS=https://media.example.internal  # 域名来源不做网段判定，只认精确白名单
 # UHD630 VAAPI 环境（systemd 不继承 /etc/profile.d 的变量，必须显式给）
 Environment=LIBVA_DRIVER_NAME=iHD
 Environment=LIBVA_DRM_DEVICE=/dev/dri/renderD128
